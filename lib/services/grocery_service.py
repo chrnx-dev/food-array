@@ -4,8 +4,8 @@ from pymongo import MongoClient
 class GroceryService():
     def __init__(self, client: MongoClient) -> None:
         self.client = client
-        
-    def __new__(self, cls: GroceryService) -> GroceryService:
-        if not hasattr(cls, 'instance'):
-            cls.instance = super().__new__(cls)
-        return cls.instance
+
+    def get_list(self, start = None, end = None):
+        print(start, end, self.client)
+        # self.client.get_database()['groceries'].find_one()
+        return self.client.get_database()['groceries'].find()
