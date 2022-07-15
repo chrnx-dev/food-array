@@ -15,11 +15,22 @@ class DatabaseEnv:
         pass
     
     def percept(self) -> None:
-        today = pendulum.now()
+        localTZ = pendulum.now().timezone
+        today = pendulum.now(pendulum.timezone('UTC')).end_of('day')
         yesterday = today.subtract(days=1)
-        init_week = today.start_of('week').subtract(weeks=self.history_weeks_loopback)
-        print(today, get_season(today), self.service.get_list())
-        print(today.weekday(), yesterday.weekday(), get_season(today))
+        init_week = today.start_of('week')
+        init_period = init_week.subtract(weeks=self.history_weeks_loopback).start_of('day')
+        
+        print(init_period.to_iso8601_string(), today.to_iso8601_string())
+        data = self.service.get_list(init_period, today)
+        
+        for d in data:
+            date_shopping = localTZ.convert(pendulum.instance(d['date']))
+            print(date_shopping, init_week, date_shopping.weekday(), get_season(date_shopping), date_shopping < init_week)
 
-    def reaction(self) -> None:
+    
+    def resolve(self, state) -> None:
+        pass
+
+    def reaction(self, action) -> None:
         pass
