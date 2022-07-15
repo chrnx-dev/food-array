@@ -17,4 +17,5 @@ seasons = [
 
 def get_season(date) -> int:
     return next(season for season, start, end in seasons 
-        if pendulum.datetime(date.year, start[0], start[1]) <= date <=  pendulum.datetime(date.year, end[0], end[1]))
+        if pendulum.datetime(date.year, start[0], start[1]).start_of('day') <= date <=  
+        pendulum.datetime(date.year, end[0], end[1]).end_of('day'))
