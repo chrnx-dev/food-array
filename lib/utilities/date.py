@@ -19,3 +19,11 @@ def get_season(date) -> int:
     return next(season for season, start, end in seasons 
         if pendulum.datetime(date.year, start[0], start[1]).start_of('day') <= date <=  
         pendulum.datetime(date.year, end[0], end[1]).end_of('day'))
+
+def to_local(date: pendulum.DateTime) -> pendulum.DateTime:
+    tz = pendulum.now().timezone
+    return tz.convert(date)
+
+def to_utc(date: pendulum.DateTime) -> pendulum.DateTime:
+    tz = pendulum.timezone('UTC')
+    return tz.convert(date)
