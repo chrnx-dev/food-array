@@ -10,7 +10,7 @@ db.groceries.deleteMany({})
 print(initWeek)
 db.groceries.insert({
         items: [
-            {sku: NumberInt(1), name: "Manzana", qty: NumberInt(Math.floor(Math.random() * 10))  }
+            {sku: "1", name: "Manzana", qty: NumberInt(Math.floor(Math.random() * 10))  }
         ],
         date: initWeek
     })
@@ -18,7 +18,7 @@ db.groceries.insert({
 setup.forEach((daysAgo) => {
     db.groceries.insert({
         items: [
-            {sku: NumberInt(1), name: "Manzana", qty: NumberInt(Math.floor(Math.random() * 10))  }
+            {sku: "1", name: "Manzana", qty: NumberInt(Math.floor(Math.random() * 10))  }
         ],
         date: new Date(initWeek - (daysAgo*86400000))
     })

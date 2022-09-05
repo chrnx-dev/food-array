@@ -8,4 +8,5 @@ grocery_service = GroceryService(client)
 
 
 env = DatabaseEnv(grocery_service)
-env.percept()
+state = env.percept()
+print(state.counter, state.skus)
