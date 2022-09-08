@@ -1,23 +1,46 @@
-import AgentContract from "@contracts/Agents";
-import { injectable } from "inversify";
-import AgentService from "src/services/AgentService";
-import Environment from "./Environment";
+import AgentContract from '@contracts/Agents';
+import { AgentMemoryInterface } from '@database/schemas/AgentMemory';
+import { injectable } from 'inversify';
+import { EnvironmentState } from 'src/commons/interfaces/interfaces';
+import AgentService from 'src/services/AgentService';
+import Environment from './Environment';
+import {AgentActions} from "@commons/enums/agent-actions";
 
 @injectable()
-export default class Agent extends AgentContract{
-    private readonly env: Environment = new Environment();
-    private readonly agentService: AgentService = new AgentService();
-    
-    private readonly sku: string;
+export default class Agent extends AgentContract {
+  private readonly env: Environment = new Environment();
+  private readonly agentService: AgentService = new AgentService();
+  private readonly reviewHistoryItems: number;
 
-    constructor(sku: string) {
-        super();
-        this.sku = sku;
-    }
+  private readonly sku: string;
 
-    async percept(): Promise<any> {
-        const memory = await this.agentService.getMemory(this.sku);
-        const state = await this.env.perceive(this.sku, 10);
-        console.log(state, memory);
+  constructor(sku: string, reviewHistoryItems: number = 10) {
+    super();
+    this.sku = sku;
+    this.reviewHistoryItems = reviewHistoryItems;
+  }
+
+  async execute(): Promise<void> {
+    const memory: AgentMemoryInterface = await this.agentService.getMemory(this.sku);
+    const state: EnvironmentState = await this.percept();
+    const [action, data] = await this.resolve(state, memory);
+    console.log(action, data, memory)
+
+  }
+
+  async percept(): Promise<EnvironmentState> {
+    const state: EnvironmentState = await this.env.perceive(this.sku, this.reviewHistoryItems);
+    console.log(`---- Percepting ${this.sku} ----`);
+    console.log(` Starting state: ${state.startOfWeek.toISODate()}`);
+    console.log(` Ending state: ${state.endOfWeek.toISODate()}`);
+    console.log(` Events history: ${state.history.length}`);
+    console.log(` Current event: ${state.currentEvent.length}`);
+    console.log(`-------------------------------------------`);
+
+    return state;
+  }
+
+    async resolve(state: EnvironmentState, memory: AgentMemoryInterface): Promise<[AgentActions, any]> {
+      return [AgentActions.HOLD, {}];
     }
 }

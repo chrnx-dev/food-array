@@ -1,52 +1,53 @@
-import EnvironmentContract from "@contracts/Environments";
-import { injectable } from "inversify";
-import { first, last } from "lodash";
-import { DateTime, Interval } from "luxon";
-import ShoppingEventService from "src/services/ShoppingEventService";
-import * as stats from "simple-statistics";
+import EnvironmentContract from '@contracts/Environments';
+import { injectable } from 'inversify';
+import { first, last } from 'lodash';
+import { DateTime, Interval } from 'luxon';
+import ShoppingEventService from 'src/services/ShoppingEventService';
+import * as stats from 'simple-statistics';
+import { EnvironmentState, NormalizedEvent } from 'src/commons/interfaces/interfaces';
 
 @injectable()
 export default class Environment extends EnvironmentContract {
   private readonly shoppingEventService: ShoppingEventService = new ShoppingEventService();
 
-  async perceive(sku: string, history: number = 4): Promise<any> {
-    const today = DateTime.now().endOf("day");
-    const startOfWeek = today.startOf("week");
+  async perceive(sku: string, history: number = 4): Promise<EnvironmentState> {
+    const today = DateTime.now().endOf('day');
+    const startOfWeek = today.startOf('week');
 
     const [shoppingEvents, todayEvents] = await Promise.all([
       this.shoppingEventService.getShoppingEventsFromSku(sku, history),
       this.shoppingEventService.getShoppingEvent(today)
     ]);
-  
+
     return {
       today,
       startOfWeek,
-      endOfWeek: today.endOf("week"),
+      endOfWeek: today.endOf('week'),
       history: this.eventsNormalizer(shoppingEvents.reverse(), sku),
       currentEvent: this.eventsNormalizer(todayEvents, sku)
-    }
+    } as EnvironmentState;
   }
 
   private getItemBySku(sku: string, shoppingDetails: any[]) {
     return shoppingDetails.find((item: { sku: string }) => item.sku === sku);
   }
 
-  private eventsNormalizer(shoppingEvents: any[], sku: string) {
+  private eventsNormalizer(shoppingEvents: any[], sku: string): NormalizedEvent[] {
     const eventsAccumulator: any[] = [];
     const mergedEventsIndex: number[] = [];
 
-    for(let index=0; index <  shoppingEvents.length; index++) {
+    for (let index = 0; index < shoppingEvents.length; index++) {
       if (mergedEventsIndex.includes(index)) {
         continue;
       }
 
       const currentEvent = shoppingEvents[index];
       const currentEventDate = DateTime.fromJSDate(currentEvent.date);
-      const period = Interval.fromDateTimes(currentEventDate.startOf("week"), currentEventDate.endOf("week"));
+      const period = Interval.fromDateTimes(currentEventDate.startOf('week'), currentEventDate.endOf('week'));
 
       const inSameWeek = shoppingEvents.filter((event: any, eventIndex: number) => {
         const eventDate = DateTime.fromJSDate(event.date);
-        
+
         if (period.contains(eventDate)) {
           mergedEventsIndex.push(eventIndex);
           return true;
@@ -55,16 +56,16 @@ export default class Environment extends EnvironmentContract {
         return false;
       });
 
-      const item = {
+      const item: NormalizedEvent = {
         date: DateTime.fromJSDate(last(inSameWeek).date),
         sku,
         qty: 0,
         price: 0,
-        events: inSameWeek.length,
+        events: inSameWeek.length
       };
 
       for (const event of inSameWeek) {
-        const eventItem = event.items.find((item: { sku: string; }) => item.sku === sku);
+        const eventItem = event.items.find((item: { sku: string }) => item.sku === sku);
         item.qty += eventItem.qty;
         item.price += eventItem.price || 0;
       }
@@ -75,8 +76,7 @@ export default class Environment extends EnvironmentContract {
     return eventsAccumulator;
   }
   async getState(date: DateTime, sku: string): Promise<any> {
-    const shoppingEvents =
-      await this.shoppingEventService.getShoppingEventsFromSku(sku, 10);
+    const shoppingEvents = await this.shoppingEventService.getShoppingEventsFromSku(sku, 10);
 
     if (!shoppingEvents?.length) {
       return null;
@@ -102,9 +102,9 @@ export default class Environment extends EnvironmentContract {
       const pastEventDate = DateTime.fromJSDate(pastEvent.date);
 
       eventsAccumulator.push({
-        diffDays: currentEventDate.diff(pastEventDate, "days").days,
+        diffDays: currentEventDate.diff(pastEventDate, 'days').days,
         purchasedItems: currentItem.qty,
-        differenceItems: currentItem.qty - pastItem.qty,
+        differenceItems: currentItem.qty - pastItem.qty
       });
     }
 
@@ -117,7 +117,7 @@ export default class Environment extends EnvironmentContract {
       median: stats.medianSorted(diffDaysData),
       mode: stats.mode(diffDaysData),
       harmonicMean: stats.harmonicMean(diffDaysData),
-      skewness: stats.sampleSkewness(diffDaysData),
+      skewness: stats.sampleSkewness(diffDaysData)
     });
 
     console.log({
@@ -126,7 +126,7 @@ export default class Environment extends EnvironmentContract {
       median: stats.medianSorted(purchasedItems),
       mode: stats.mode(purchasedItems),
       harmonicMean: stats.harmonicMean(purchasedItems),
-      skewness: stats.sampleSkewness(purchasedItems),
+      skewness: stats.sampleSkewness(purchasedItems)
     });
 
     /*
@@ -142,23 +142,19 @@ export default class Environment extends EnvironmentContract {
         }
         */
 
-    const startPeriod = DateTime.fromJSDate(initEvent.date).startOf("week");
+    const startPeriod = DateTime.fromJSDate(initEvent.date).startOf('week');
     const period = Interval.fromDateTimes(startPeriod, date);
 
-    console.log(
-      startPeriod.toString(),
-      date.toString(),
-      date.diff(startPeriod, "weeks").weeks
-    );
+    console.log(startPeriod.toString(), date.toString(), date.diff(startPeriod, 'weeks').weeks);
 
     const state = {
-      period: period.length("days"),
+      period: period.length('days'),
       sku,
       lastShoppingEvent: lastEvent.date,
-      firstShoppingEvent: initEvent.date,
+      firstShoppingEvent: initEvent.date
     } as any;
   }
   async react(): Promise<any> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 }
