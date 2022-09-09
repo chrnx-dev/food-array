@@ -75,6 +75,7 @@ export default class Environment extends EnvironmentContract {
 
     return eventsAccumulator;
   }
+
   async getState(date: DateTime, sku: string): Promise<any> {
     const shoppingEvents = await this.shoppingEventService.getShoppingEventsFromSku(sku, 10);
 
@@ -84,8 +85,6 @@ export default class Environment extends EnvironmentContract {
 
     const initEvent = last(shoppingEvents);
     const lastEvent = first(shoppingEvents);
-
-    console.log(await this.shoppingEventService.getShoppingEvent(DateTime.fromJSDate(initEvent.date)));
 
     const reversedEvents = shoppingEvents.reverse();
 
@@ -154,6 +153,7 @@ export default class Environment extends EnvironmentContract {
       firstShoppingEvent: initEvent.date
     } as any;
   }
+
   async react(): Promise<any> {
     throw new Error('Method not implemented.');
   }

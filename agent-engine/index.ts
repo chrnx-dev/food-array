@@ -6,7 +6,7 @@ main();
 
 async function main() {
   const connection = await DatabaseEngine.initialize();
-  const agent = new Agent('1');
+  const agent = new Agent('1', { suggestedWeekDayPreference: 6 });
 
   await agent.execute();
   connection.disconnect();

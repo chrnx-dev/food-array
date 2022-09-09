@@ -1,6 +1,7 @@
 export enum AgentActions {
-    INITIALIZE,
-    HOLD,
-    SUGGEST,
-    ADJUST,
+  INITIALIZE = 'INITIALIZE',
+  HOLD = 'HOLD',
+  SUGGEST = 'SUGGEST',
+  ADJUST = 'ADJUST',
+  REVIEW = 'REVIEW',
 }

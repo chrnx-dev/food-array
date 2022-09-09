@@ -7,7 +7,6 @@ export default class ShoppingEventService {
   }
 
   async getShoppingEvent(date: DateTime) {
-    console.log('Get Shopping Event', date.toISO(), date.startOf('day').toISO());
     return ShoppingEventModel.find({
       $and: [{ date: { $gte: date.startOf('day').toISO() } }, { date: { $lte: date.endOf('day').toISO() } }]
     }).lean();
