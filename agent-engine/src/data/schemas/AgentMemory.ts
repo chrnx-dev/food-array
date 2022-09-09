@@ -3,8 +3,8 @@ import { Schema } from 'mongoose';
 export interface AgentMemoryInterface {
   sku: string;
   expectedQty: number;
-  periocityDays: number;
-  init: boolean;
+  periodicityDays: number;
+  initialized: boolean;
   lastEvent: Date;
 }
 
@@ -12,8 +12,8 @@ export const AgentMemorySchema = new Schema<AgentMemoryInterface>(
   {
     sku: { type: String, unique: true },
     expectedQty: Number,
-    periocityDays: Number,
-    init: Boolean,
+    periodicityDays: Number,
+    initialized: Boolean,
     lastEvent: Date
   },
   { timestamps: true }
