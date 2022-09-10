@@ -13,7 +13,7 @@ export const AgentMemorySchema = new Schema<AgentMemoryInterface>(
     sku: { type: String, unique: true },
     expectedQty: Number,
     periodicityDays: Number,
-    initialized: Boolean,
+    initialized: { type: Boolean, default: false},
     lastEvent: Date
   },
   { timestamps: true }

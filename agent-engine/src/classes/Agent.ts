@@ -48,11 +48,15 @@ export default class Agent extends AgentContract {
 
     // First Time Agent Saw a Product
     if (!memory && state.history.length) {
-      return [AgentActions.INITIALIZE, {}];
+
+      if (state.history.length < 4) {
+        return [AgentActions.INITIALIZE, {}];
+      }
+
     }
 
     // Agent is Reviewing a Product for appropriate plan.
-    if (memory && state.currentEvent.length <= 4) {
+    if (memory && state.currentEvent.length <= this.reviewHistoryItems) {
       return [AgentActions.REVIEW, {}];
     }
 
@@ -65,8 +69,6 @@ export default class Agent extends AgentContract {
     if (memory && state.today.weekday === this.settings.suggestedWeekDayPreference) {
       return [AgentActions.SUGGEST, {}];
     }
-
-
 
     return [AgentActions.HOLD, {}];
   }
