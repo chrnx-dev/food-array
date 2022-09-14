@@ -27,7 +27,7 @@ export default class Agent extends AgentContract {
   async execute(): Promise<void> {
     const memory: AgentMemoryInterface = await this.agentService.getMemory(this.sku);
     const state: EnvironmentState = await this.percept();
-    const [action, data] = await this.resolve(state, memory);
+    const [action, data] = await this.rationale(state, memory);
     console.log(action, data, memory);
   }
 
@@ -43,7 +43,7 @@ export default class Agent extends AgentContract {
     return state;
   }
 
-  async resolve(state: EnvironmentState, memory: AgentMemoryInterface): Promise<[AgentActions, any]> {
+  async rationale(state: EnvironmentState, memory: AgentMemoryInterface): Promise<[AgentActions, any]> {
     console.log(memory, 'Resolve Memory');
 
     // First Time Agent Saw a Product

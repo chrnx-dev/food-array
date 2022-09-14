@@ -8,7 +8,7 @@ export default abstract class AgentContract {
   async reaction(): Promise<any> {
     throw new Error('Method not implemented.');
   }
-  async resolve(state: EnvironmentState, memory: AgentMemoryInterface): Promise<any> {
+  async rationale(state: EnvironmentState, memory: AgentMemoryInterface): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }
