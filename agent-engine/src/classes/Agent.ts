@@ -1,31 +1,31 @@
 import AgentContract from '@contracts/Agents';
-import {AgentMemoryInterface} from '@database/schemas/AgentMemory';
-import {injectable} from 'inversify';
-import {EnvironmentState, SwarmPreferences} from 'src/commons/interfaces/interfaces';
+import { AgentMemoryInterface } from '@database/schemas/AgentMemory';
+import { injectable } from 'inversify';
+import { EnvironmentState, SwarmPreferences } from 'src/commons/interfaces/interfaces';
 import AgentService from 'src/services/AgentService';
 import Environment from './Environment';
-import {AgentActions} from '@commons/enums/agent-actions';
+import { AgentActions } from '@commons/enums/agent-actions';
 
 @injectable()
 export default class Agent extends AgentContract {
-  private readonly env: Environment = new Environment();
-  private readonly agentService: AgentService = new AgentService();
+  private readonly env: Environment;
+  private readonly agentService: AgentService;
   private readonly reviewHistoryItems: number;
 
   private readonly sku: string;
-  private readonly memory: Promise<AgentMemoryInterface>;
   private readonly settings: Partial<SwarmPreferences>;
 
   constructor(sku: string, settings: Partial<SwarmPreferences>, reviewHistoryItems: number = 10) {
     super();
+    this.env = new Environment();
+    this.agentService = new AgentService();
     this.sku = sku;
     this.reviewHistoryItems = reviewHistoryItems;
-    this.memory = this.agentService.getMemory(this.sku);
     this.settings = settings;
   }
 
   async execute(): Promise<void> {
-    const memory: AgentMemoryInterface = await this.memory;
+    const memory: AgentMemoryInterface = await this.agentService.getMemory(this.sku);
     const state: EnvironmentState = await this.percept();
     const [action, data] = await this.resolve(state, memory);
     console.log(action, data, memory);
@@ -48,11 +48,13 @@ export default class Agent extends AgentContract {
 
     // First Time Agent Saw a Product
     if (!memory && state.history.length) {
-
       if (state.history.length < 4) {
         return [AgentActions.INITIALIZE, {}];
       }
 
+      //create memory
+
+      return [AgentActions.REVIEW, {}];
     }
 
     // Agent is Reviewing a Product for appropriate plan.

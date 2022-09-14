@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node -r dotenv/config -r tsconfig-paths/register index.ts"
+    "start": "ts-node -r dotenv/config -r tsconfig-paths/register index.ts",
+    "populate": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/populate-events.ts"
   },
   "author": "",
   "license": "ISC",

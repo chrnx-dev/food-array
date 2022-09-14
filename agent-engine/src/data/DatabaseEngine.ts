@@ -1,6 +1,7 @@
 import { connect } from 'mongoose';
 
-const MODEL_IMPORTS: string[] = ['@database/models/ShoppingEventModel'];
+const MODEL_IMPORTS: string[] = [
+];
 
 export default class DatabaseEngine {
   static async initialize() {

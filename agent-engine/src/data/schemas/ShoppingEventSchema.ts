@@ -10,6 +10,7 @@ export interface ShoppingEventItem {
 export interface ShoppingEventInterface {
   date: Date;
   items: ShoppingEventItem[];
+  isSuggested: boolean;
 }
 
 export const ShoppingEventSchema = new Schema<ShoppingEventInterface>({
@@ -21,5 +22,6 @@ export const ShoppingEventSchema = new Schema<ShoppingEventInterface>({
       price: Number,
       quantity: Number
     }
-  ]
+  ],
+  isSuggested: { type: Boolean, default: true}
 });
