@@ -23,12 +23,14 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "chalk": "^4.1.2",
     "dotenv": "^16.0.1",
     "inversify": "^6.0.1",
     "lodash": "^4.17.21",
     "luxon": "^3.0.1",
     "mongoose": "^6.5.3",
     "reflect-metadata": "^0.1.13",
-    "simple-statistics": "^7.7.6"
+    "simple-statistics": "^7.7.6",
+    "winston": "^3.8.2"
   }
 }

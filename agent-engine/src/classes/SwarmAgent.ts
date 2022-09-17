@@ -4,6 +4,7 @@ import ShoppingEventService from '../services/ShoppingEventService';
 import { ShoppingEventItem } from '@database/schemas/ShoppingEventSchema';
 import {chunk, uniq} from 'lodash';
 import Agent from "@classes/Agent";
+import Logger from "@classes/Logger";
 
 @injectable()
 export default class SwarmAgents {
@@ -12,13 +13,13 @@ export default class SwarmAgents {
     const shoppingEventsServices = new ShoppingEventService();
 
     if (!settings) {
-      console.log('You know nothing John Snow!!');
+      Logger.error('You know nothing John Snow!!');
       throw new Error('This Swarm is not Setup yet, pleas ask administrator provide configuration.');
     }
 
     // Let configure our swarm with registered sku.
     if (!settings.registeredSkus.length) {
-      console.info('Registering Possible SKUs from previous 100 Shopping Events...');
+      Logger.info('Registering Possible SKUs from previous 100 Shopping Events...');
       const events = await shoppingEventsServices.getLatestEvents(100);
 
       const items: string[] = events.reduce((prev: ShoppingEventItem[], current) => prev.concat(current.items), []).map((i) => i.sku);
@@ -29,7 +30,10 @@ export default class SwarmAgents {
     const swarmAgents: Agent[] = [];
 
     for (const sku of settings.registeredSkus) {
-      swarmAgents.push(new Agent(sku, { suggestedWeekDayPreference: settings.suggestedDay }))
+      swarmAgents.push(new Agent(sku, {
+        suggestedWeekDayPreference: settings.suggestedDay,
+        minimumEventsToReview: settings.minimumItemsToReview || 4
+      }))
     }
 
     let executions:Promise<any>[] = [];

@@ -66,7 +66,7 @@ export default class Environment extends EnvironmentContract {
 
       for (const event of inSameWeek) {
         const eventItem = event.items.find((item: { sku: string }) => item.sku === sku);
-        item.qty += eventItem.qty;
+        item.qty += eventItem.quantity || 0;
         item.price += eventItem.price || 0;
       }
 

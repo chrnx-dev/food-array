@@ -5,7 +5,7 @@ export interface AgentMemoryInterface {
   expectedQty: number;
   periodicityDays: number;
   initialized: boolean;
-  lastEvent: Date;
+  lastEvent: Date | undefined;
 }
 
 export const AgentMemorySchema = new Schema<AgentMemoryInterface>(

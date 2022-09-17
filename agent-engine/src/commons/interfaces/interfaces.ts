@@ -18,4 +18,10 @@ export interface EnvironmentState {
 
 export interface SwarmPreferences {
   suggestedWeekDayPreference: number;
+  minimumEventsToReview: number;
+}
+
+export interface ActionArguments {
+  shouldInitialize: boolean;
+  currentEvents: NormalizedEvent[];
 }

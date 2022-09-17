@@ -1,77 +1,72 @@
-import AgentContract from '@contracts/Agents';
-import { AgentMemoryInterface } from '@database/schemas/AgentMemory';
+import AgentContract, { AgentActionContract } from '@contracts/Agents';
 import { injectable } from 'inversify';
-import { EnvironmentState, SwarmPreferences } from 'src/commons/interfaces/interfaces';
-import AgentService from 'src/services/AgentService';
-import Environment from './Environment';
-import { AgentActions } from '@commons/enums/agent-actions';
+import {ActionArguments, EnvironmentState} from "@commons/interfaces/interfaces";
+import {AgentActions} from "@commons/enums/agent-actions";
+import {AgentMemoryInterface} from "@database/schemas/AgentMemory";
+import AgentMemoryModel, {AgentMemoryDocument} from "@database/models/AgentMemory";
+import {first, round} from "lodash";
+import {harmonicMean, mean, medianSorted, mode} from "simple-statistics";
+import Logger from "@classes/Logger";
+import chalk from "chalk";
 
 @injectable()
-export default class Agent extends AgentContract {
-  private readonly env: Environment;
-  private readonly agentService: AgentService;
-  private readonly reviewHistoryItems: number;
+export default class Agent extends AgentContract implements AgentActionContract {
 
-  private readonly sku: string;
-  private readonly settings: Partial<SwarmPreferences>;
-
-  constructor(sku: string, settings: Partial<SwarmPreferences>, reviewHistoryItems: number = 10) {
-    super();
-    this.env = new Environment();
-    this.agentService = new AgentService();
-    this.sku = sku;
-    this.reviewHistoryItems = reviewHistoryItems;
-    this.settings = settings;
+  async react(action: AgentActions, actionArgs: Partial<ActionArguments>, memory: AgentMemoryInterface, state: EnvironmentState) {
+    switch (action) {
+      case AgentActions.INITIALIZE:
+        return await this.initialize(actionArgs, state);
+      case AgentActions.REVIEW:
+        return Logger.info(" -> Review Action Not Implemented");
+    }
   }
 
-  async execute(): Promise<void> {
-    const memory: AgentMemoryInterface = await this.agentService.getMemory(this.sku);
-    const state: EnvironmentState = await this.percept();
-    const [action, data] = await this.rationale(state, memory);
-    console.log(action, data, memory);
+  async adjust(): Promise<AgentMemoryDocument> {}
+
+  async hold(): Promise<AgentMemoryDocument> {}
+
+  async initialize(actionArguments: Partial<ActionArguments>, state: EnvironmentState): Promise<AgentMemoryDocument> {
+    const memory= new AgentMemoryModel();
+    const lastEvent = first(state.history);
+
+    Logger.info(`Initialize Agent for ${this.sku} - Should initialize? ${actionArguments.shouldInitialize ? "YES" : "NO"}`);
+    memory.sku = this.sku;
+    memory.lastEvent = lastEvent?.date.toJSDate();
+
+    if (actionArguments.shouldInitialize) {
+      Logger.info(`Initialized Agent`);
+      return this.review(actionArguments, state, memory);
+    }
+    Logger.info(" -> Initialized Agent");
+    return memory.save();
   }
 
-  async percept(): Promise<EnvironmentState> {
-    const state: EnvironmentState = await this.env.perceive(this.sku, this.reviewHistoryItems);
-    console.log(`---- Perception ${this.sku} ----`);
-    console.log(` Perception Date: ${state.today.toISODate()}`);
-    console.log(` Week: ${state.startOfWeek.toISODate()} - ${state.endOfWeek.toISODate()}`);
-    console.log(` Events history: ${state.history.length}`);
-    console.log(` Current event: ${state.currentEvent.length}`);
-    console.log(`-------------------------------------------`);
+  async review(actionArguments: Partial<ActionArguments>, state: EnvironmentState, memory:  AgentMemoryDocument): Promise<AgentMemoryDocument> {
+    Logger.info(" -> Agent is Reviewing The Item");
+    const history = state.history;
+    const canMarkedAsInitialized =  history.length > (this.settings.minimumEventsToReview || 0);
+    memory.initialized = canMarkedAsInitialized;
 
-    return state;
+    const diffDays = [];
+    const qtyData = [];
+
+    for (let index = 1; index < history.length; index++) {
+      const currentEvent = history[index];
+      const pastEvent = history[index - 1];
+
+      Logger.info(currentEvent.date.toISO() );
+      diffDays.push(currentEvent.date.diff(pastEvent.date, 'day').days);
+      qtyData.push(currentEvent.qty)
+    }
+    Logger.info(diffDays, qtyData);
+    Logger.info(`Days : Mean[${mean(diffDays)}], Median [${medianSorted(diffDays.sort())}], Mode [${mode(diffDays.sort())}], Harmonic Mean [${harmonicMean(diffDays)}]`);
+    Logger.info(`QTY  : Mean[${mean(qtyData)}], Median [${medianSorted(qtyData.sort())}], Mode [${mode(qtyData.sort())}], Harmonic Mean [${harmonicMean(qtyData)}]`);
+    memory.expectedQty = round(medianSorted(qtyData.sort()));
+    memory.periodicityDays = round(medianSorted(diffDays.sort()));
+
+    Logger.info(" -> Agent Reviewed The Item");
+    return memory.save();
   }
 
-  async rationale(state: EnvironmentState, memory: AgentMemoryInterface): Promise<[AgentActions, any]> {
-    console.log(memory, 'Resolve Memory');
-
-    // First Time Agent Saw a Product
-    if (!memory && state.history.length) {
-      if (state.history.length < 4) {
-        return [AgentActions.INITIALIZE, {}];
-      }
-
-      //create memory
-
-      return [AgentActions.REVIEW, {}];
-    }
-
-    // Agent is Reviewing a Product for appropriate plan.
-    if (memory && state.currentEvent.length <= this.reviewHistoryItems) {
-      return [AgentActions.REVIEW, {}];
-    }
-
-    // Agent detect user buy a product today.
-    if (memory && state.currentEvent.length) {
-      return [AgentActions.ADJUST, {}];
-    }
-
-    // Agent made a suggestion to user.
-    if (memory && state.today.weekday === this.settings.suggestedWeekDayPreference) {
-      return [AgentActions.SUGGEST, {}];
-    }
-
-    return [AgentActions.HOLD, {}];
-  }
+  async suggest(): Promise<AgentMemoryDocument> {}
 }

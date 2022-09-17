@@ -1,8 +1,9 @@
 import DatabaseEngine from "@database/DatabaseEngine";
 import {ShoppingEventInterface, ShoppingEventItem} from "@database/schemas/ShoppingEventSchema";
 import ShoppingEventModel from "@database/models/ShoppingEventModel";
-import {DateTime, Duration} from "luxon";
-import {sampleSize, shuffle, random} from "lodash";
+import {DateTime} from "luxon";
+import {sampleSize, shuffle} from "lodash";
+import { randomInt } from "crypto";
 
 main();
 
@@ -40,11 +41,10 @@ async function main() {
 
     for (const itemSample of sampleSize(shuffle(products), MAX_SAMPLES)) {
       const [item, randomSetting] = itemSample;
-      item.quantity = random(...randomSetting);
-      shoppingEvent.items.push(item as ShoppingEventItem);
-      console.log(item, randomSetting, );
+      shoppingEvent.items.push({ ...item, quantity: randomInt(randomSetting[0], randomSetting[1]) } as ShoppingEventItem);
     }
     shoppingEvents.push(shoppingEvent);
+    console.log(shoppingEvent);
   }
 
   await ShoppingEventModel.insertMany(shoppingEvents);
