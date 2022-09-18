@@ -5,11 +5,13 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node -r dotenv/config -r tsconfig-paths/register index.ts",
-    "populate": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/populate-events.ts"
+    "populate": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/populate-events.ts",
+    "swarm:init": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/initialize-swarm.ts"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/bluebird": "^3.5.36",
     "@types/dotenv": "^8.2.0",
     "@types/inversify": "^2.0.33",
     "@types/lodash": "^4.14.184",
@@ -17,12 +19,15 @@
     "@types/mongoose": "^5.11.97",
     "@types/node": "^18.7.13",
     "@types/reflect-metadata": "^0.1.0",
+    "@types/uuid": "^8.3.4",
+    "@types/yargs-parser": "^21.0.0",
     "prettier": "2.7.1",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.0",
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "bluebird": "^3.7.2",
     "chalk": "^4.1.2",
     "dotenv": "^16.0.1",
     "inversify": "^6.0.1",
@@ -31,6 +36,8 @@
     "mongoose": "^6.5.3",
     "reflect-metadata": "^0.1.13",
     "simple-statistics": "^7.7.6",
-    "winston": "^3.8.2"
+    "uuid": "^9.0.0",
+    "winston": "^3.8.2",
+    "yargs-parser": "^21.1.1"
   }
 }

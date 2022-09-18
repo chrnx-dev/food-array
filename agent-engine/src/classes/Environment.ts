@@ -24,7 +24,7 @@ export default class Environment extends EnvironmentContract {
       startOfWeek,
       endOfWeek: today.endOf('week'),
       history: this.eventsNormalizer(shoppingEvents.reverse(), sku),
-      currentEvent: this.eventsNormalizer(todayEvents, sku)
+      currentEvent: this.eventsNormalizer(todayEvents.reverse(), sku)
     } as EnvironmentState;
   }
 
@@ -75,6 +75,7 @@ export default class Environment extends EnvironmentContract {
 
     return eventsAccumulator;
   }
+
 
   async getState(date: DateTime, sku: string): Promise<any> {
     const shoppingEvents = await this.shoppingEventService.getShoppingEventsFromSku(sku, 10);

@@ -5,11 +5,13 @@ import { ShoppingEventItem } from '@database/schemas/ShoppingEventSchema';
 import {chunk, uniq} from 'lodash';
 import Agent from "@classes/Agent";
 import Logger from "@classes/Logger";
+import {SWARM_CLIENT_ID} from "@commons/configs/env";
+import { map } from "bluebird";
 
 @injectable()
 export default class SwarmAgents {
   async run() {
-    const settings = await SwarmConfig.findOne();
+    const settings = await SwarmConfig.findOne({clientId: SWARM_CLIENT_ID});
     const shoppingEventsServices = new ShoppingEventService();
 
     if (!settings) {
@@ -32,15 +34,11 @@ export default class SwarmAgents {
     for (const sku of settings.registeredSkus) {
       swarmAgents.push(new Agent(sku, {
         suggestedWeekDayPreference: settings.suggestedDay,
-        minimumEventsToReview: settings.minimumItemsToReview || 4
+        minimumEventsToReview: settings.minimumItemsToReview || 4,
+        suggestedToleranceDays: settings.suggestionToleranceDays || 2,
       }))
     }
 
-    let executions:Promise<any>[] = [];
-    for (const execAgents of chunk(swarmAgents, 5)) {
-      executions = [...executions, ...execAgents.map(e => e.execute())]
-    }
-
-    return Promise.all(executions);
+    return map(swarmAgents, async (agent) => agent.execute() , {concurrency: 5});
   }
 }

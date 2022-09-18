@@ -4,21 +4,28 @@ import {ActionArguments, EnvironmentState} from "@commons/interfaces/interfaces"
 import {AgentActions} from "@commons/enums/agent-actions";
 import {AgentMemoryInterface} from "@database/schemas/AgentMemory";
 import AgentMemoryModel, {AgentMemoryDocument} from "@database/models/AgentMemory";
-import {first, round} from "lodash";
+import {first, last, round} from "lodash";
 import {harmonicMean, mean, medianSorted, mode} from "simple-statistics";
 import Logger from "@classes/Logger";
 import chalk from "chalk";
+import {DateTime} from "luxon";
 
 @injectable()
 export default class Agent extends AgentContract implements AgentActionContract {
 
-  async react(action: AgentActions, actionArgs: Partial<ActionArguments>, memory: AgentMemoryInterface, state: EnvironmentState) {
+  async react(action: AgentActions, actionArgs: Partial<ActionArguments>, memory: AgentMemoryInterface, state: EnvironmentState): Promise<AgentMemoryDocument> {
     switch (action) {
       case AgentActions.INITIALIZE:
         return await this.initialize(actionArgs, state);
       case AgentActions.REVIEW:
-        return Logger.info(" -> Review Action Not Implemented");
+        return await this.review(actionArgs, state, memory);
+      case AgentActions.SUGGEST:
+        return await this.suggest(actionArgs, state, memory);
+      default:
+        return memory;
     }
+
+
   }
 
   async adjust(): Promise<AgentMemoryDocument> {}
@@ -27,7 +34,7 @@ export default class Agent extends AgentContract implements AgentActionContract 
 
   async initialize(actionArguments: Partial<ActionArguments>, state: EnvironmentState): Promise<AgentMemoryDocument> {
     const memory= new AgentMemoryModel();
-    const lastEvent = first(state.history);
+    const lastEvent = last(state.history);
 
     Logger.info(`Initialize Agent for ${this.sku} - Should initialize? ${actionArguments.shouldInitialize ? "YES" : "NO"}`);
     memory.sku = this.sku;
@@ -44,7 +51,7 @@ export default class Agent extends AgentContract implements AgentActionContract 
   async review(actionArguments: Partial<ActionArguments>, state: EnvironmentState, memory:  AgentMemoryDocument): Promise<AgentMemoryDocument> {
     Logger.info(" -> Agent is Reviewing The Item");
     const history = state.history;
-    const canMarkedAsInitialized =  history.length > (this.settings.minimumEventsToReview || 0);
+    const canMarkedAsInitialized =  history.length >= (this.settings.minimumEventsToReview || 0);
     memory.initialized = canMarkedAsInitialized;
 
     const diffDays = [];
@@ -68,5 +75,10 @@ export default class Agent extends AgentContract implements AgentActionContract 
     return memory.save();
   }
 
-  async suggest(): Promise<AgentMemoryDocument> {}
+  async suggest(actionArguments: Partial<ActionArguments>, state: EnvironmentState, memory: AgentMemoryDocument): Promise<AgentMemoryDocument> {
+    Logger.warn(` -> Agent is Suggesting The Item Today [${state.today.toISO()}] Last Event [${memory.lastEvent}] Tolerance [${this.settings.suggestedToleranceDays}]`);
+    const diffDays = state.today.diff(DateTime.fromJSDate(memory.lastEvent), 'day').days;
+    Logger.warn(`Diff Days: ${diffDays}, Periodicity: ${memory.periodicityDays}, Expected Qty: ${memory.expectedQty}`);
+    return memory;
+  }
 }

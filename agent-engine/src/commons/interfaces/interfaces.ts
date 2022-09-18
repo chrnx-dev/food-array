@@ -17,6 +17,7 @@ export interface EnvironmentState {
 }
 
 export interface SwarmPreferences {
+  suggestedToleranceDays: number;
   suggestedWeekDayPreference: number;
   minimumEventsToReview: number;
 }
@@ -24,4 +25,8 @@ export interface SwarmPreferences {
 export interface ActionArguments {
   shouldInitialize: boolean;
   currentEvents: NormalizedEvent[];
+}
+
+export interface Suggestion {
+  qty: number;
 }
