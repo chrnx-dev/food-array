@@ -94,10 +94,9 @@ export default abstract class AgentContract {
     // Agent made a suggestion to user.
     const diffDays = Math.round(state.today.diff(DateTime.fromJSDate(memory.lastEvent), 'day').days);
     const minDays = diffDays - (this.settings.suggestedToleranceDays || 0);
-    const maxDays = diffDays + (this.settings.suggestedToleranceDays || 0);
-    const canSuggest = minDays <= memory.periodicityDays && maxDays >= memory.periodicityDays;
+    const canSuggest = minDays <= memory.periodicityDays || diffDays >= memory.periodicityDays;
 
-    Logger.debug(`Suggested: ${!!memory}, Today Weekday ${state.today.weekday}, System Suggested ${this.settings.suggestedWeekDayPreference} - Can Suggest ${canSuggest} - ${memory.periodicityDays}- ${diffDays} - ${minDays} - ${maxDays}`);
+    Logger.debug(`Suggested: ${!!memory}, Today Weekday ${state.today.weekday}, System Suggested ${this.settings.suggestedWeekDayPreference} - Can Suggest ${canSuggest} - ${memory.periodicityDays}- ${diffDays} - ${minDays} `);
     if (memory && state.today.weekday === this.settings.suggestedWeekDayPreference && canSuggest) {
       return [AgentActions.SUGGEST, {}];
     }

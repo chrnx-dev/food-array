@@ -11,7 +11,7 @@ async function main() {
   const db = await DatabaseEngine.initialize();
 
   const daysBack: number[] = [7, 11, 14, 18, 21, 28, 32, 39, 44];
-  const MAX_SAMPLES = 5;
+  const MAX_SAMPLES = 6;
   const today = DateTime.now().set({hour: 18, minute: 0, second: 0, millisecond: 0});
 
 
