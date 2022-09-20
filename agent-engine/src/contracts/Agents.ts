@@ -4,10 +4,11 @@ import {AgentActions} from "@commons/enums/agent-actions";
 import Environment from "@classes/Environment";
 import AgentService from "../services/AgentService";
 import {AgentMemoryDocument} from "@database/models/AgentMemory";
-import {first, last} from "lodash";
+import {first, last, size} from "lodash";
 import {DateTime} from "luxon";
 import Logger from "@classes/Logger";
 import chalk from "chalk";
+import {ShoppingEventItem} from "@database/schemas/ShoppingEventSchema";
 
 export default abstract class AgentContract {
 
@@ -25,7 +26,11 @@ export default abstract class AgentContract {
     return chalk.bold(`Agent [${this.sku}]`);
   }
 
-  async execute(): Promise<void> {
+  getSku() {
+    return this.sku;
+  }
+
+  async execute(): Promise<[AgentMemoryDocument, Partial<ShoppingEventItem> | null, AgentActions]> {
     Logger.info(`${this.headerLog()} Start Execution`);
 
     const memory: AgentMemoryDocument = await this.agentService.getMemory(this.sku);
@@ -38,14 +43,13 @@ export default abstract class AgentContract {
     Logger.info(`${this.headerLog()}  <== Rationale Process Ended`);
 
     Logger.info(`${this.headerLog()}  ==> Reaction Process Starting`);
-    const modifiedMemory: AgentMemoryDocument = await this.react(action, data, memory, state);
+    const [modifiedMemory, suggestedItem]: [AgentMemoryDocument, Partial<ShoppingEventItem> | null] = await this.react(action, data, memory, state);
     Logger.info(`${this.headerLog()}  <== Reaction Process Ended`);
-    Logger.info(JSON.stringify(modifiedMemory.toObject()));
     Logger.info(`${this.headerLog()} End Execution`);
-
+    return [modifiedMemory, suggestedItem, action];
   }
 
-  async react(action: AgentActions, actionArgs: Partial<ActionArguments>, memory: AgentMemoryDocument, state: EnvironmentState) {
+  async react(action: AgentActions, actionArgs: Partial<ActionArguments>, memory: AgentMemoryDocument, state: EnvironmentState): Promise<[AgentMemoryDocument,  Partial<ShoppingEventItem> | null]> {
     throw new Error("Not Implemented");
   }
 
@@ -92,9 +96,10 @@ export default abstract class AgentContract {
     }
 
     // Agent made a suggestion to user.
-    const diffDays = Math.round(state.today.diff(DateTime.fromJSDate(memory.lastEvent), 'day').days);
-    const minDays = diffDays - (this.settings.suggestedToleranceDays || 0);
-    const canSuggest = minDays <= memory.periodicityDays || diffDays >= memory.periodicityDays;
+    const diffDays = Math.round(state.today.diff(DateTime.fromJSDate(<Date>memory.lastEvent), 'day').days);
+    const minDays = memory.periodicityDays - (this.settings.suggestedToleranceDays || 0);
+    const isAlreadySuggestedEvent = this.env.getLatestSuggestedEventByDate(state.today);
+    const canSuggest = !size(isAlreadySuggestedEvent) && (minDays <= diffDays || diffDays >= memory.periodicityDays);
 
     Logger.debug(`Suggested: ${!!memory}, Today Weekday ${state.today.weekday}, System Suggested ${this.settings.suggestedWeekDayPreference} - Can Suggest ${canSuggest} - ${memory.periodicityDays}- ${diffDays} - ${minDays} `);
     if (memory && state.today.weekday === this.settings.suggestedWeekDayPreference && canSuggest) {
@@ -110,6 +115,6 @@ export interface AgentActionContract {
   initialize(actionArguments: Partial<ActionArguments>, state: EnvironmentState): Promise<AgentMemoryDocument>;
   review(actionArguments: Partial<ActionArguments>, state: EnvironmentState, memory: AgentMemoryDocument ): Promise<AgentMemoryDocument>;
   adjust(actionArguments: Partial<ActionArguments>, state: EnvironmentState, memory: AgentMemoryDocument): Promise<AgentMemoryDocument>;
-  suggest(actionArguments: Partial<ActionArguments>, state: EnvironmentState, memory: AgentMemoryDocument): Promise<AgentMemoryDocument>;
+  suggest(actionArguments: Partial<ActionArguments>, state: EnvironmentState, memory: AgentMemoryDocument): Promise<[AgentMemoryDocument, Partial<ShoppingEventItem>]>;
   hold(): Promise<AgentMemoryDocument>;
 }

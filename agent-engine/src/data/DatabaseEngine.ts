@@ -1,6 +1,7 @@
 import { connect } from 'mongoose';
 
 const MODEL_IMPORTS: string[] = [
+  "@database/models/Sku",
 ];
 
 export default class DatabaseEngine {

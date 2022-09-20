@@ -1,36 +1,47 @@
-import AgentContract, { AgentActionContract } from '@contracts/Agents';
-import { injectable } from 'inversify';
+import AgentContract, {AgentActionContract} from '@contracts/Agents';
+import {injectable} from 'inversify';
 import {ActionArguments, EnvironmentState} from "@commons/interfaces/interfaces";
 import {AgentActions} from "@commons/enums/agent-actions";
-import {AgentMemoryInterface} from "@database/schemas/AgentMemory";
 import AgentMemoryModel, {AgentMemoryDocument} from "@database/models/AgentMemory";
-import {first, last, round} from "lodash";
+import {last, round} from "lodash";
 import {harmonicMean, mean, medianSorted, mode} from "simple-statistics";
 import Logger from "@classes/Logger";
-import chalk from "chalk";
 import {DateTime} from "luxon";
+import {ShoppingEventItem} from "@database/schemas/ShoppingEventSchema";
 
 @injectable()
 export default class Agent extends AgentContract implements AgentActionContract {
 
-  async react(action: AgentActions, actionArgs: Partial<ActionArguments>, memory: AgentMemoryInterface, state: EnvironmentState): Promise<AgentMemoryDocument> {
+  async react(action: AgentActions, actionArgs: Partial<ActionArguments>, memory: AgentMemoryDocument, state: EnvironmentState): Promise<[AgentMemoryDocument,  Partial<ShoppingEventItem> | null]> {
+    let modifiedMemory = memory;
+    let modifiedItem: Partial<ShoppingEventItem> | null = null;
+
     switch (action) {
       case AgentActions.INITIALIZE:
-        return await this.initialize(actionArgs, state);
+        modifiedMemory = await this.initialize(actionArgs, state);
+        break;
       case AgentActions.REVIEW:
-        return await this.review(actionArgs, state, memory);
+        modifiedMemory = await this.review(actionArgs, state, memory)
+        break;
       case AgentActions.SUGGEST:
-        return await this.suggest(actionArgs, state, memory);
-      default:
-        return memory;
+        const [suggestedMemory, suggestedItem] = await this.suggest(actionArgs, state, memory);
+        modifiedMemory = suggestedMemory;
+        modifiedItem = suggestedItem;
+        break;
+      case AgentActions.ADJUST:
+      case AgentActions.HOLD:
+        modifiedMemory = memory;
+        break;
     }
 
-
+    return [modifiedMemory, modifiedItem];
   }
 
-  async adjust(): Promise<AgentMemoryDocument> {}
+  // @ts-ignore
+  async adjust() {}
 
-  async hold(): Promise<AgentMemoryDocument> {}
+  // @ts-ignore
+  async hold() {}
 
   async initialize(actionArguments: Partial<ActionArguments>, state: EnvironmentState): Promise<AgentMemoryDocument> {
     const memory= new AgentMemoryModel();
@@ -75,10 +86,19 @@ export default class Agent extends AgentContract implements AgentActionContract 
     return memory.save();
   }
 
-  async suggest(actionArguments: Partial<ActionArguments>, state: EnvironmentState, memory: AgentMemoryDocument): Promise<AgentMemoryDocument> {
-    Logger.warn(` -> Agent is Suggesting The Item Today [${state.today.toISO()}] Last Event [${memory.lastEvent}] Tolerance [${this.settings.suggestedToleranceDays}]`);
-    const diffDays = state.today.diff(DateTime.fromJSDate(memory.lastEvent), 'day').days;
-    Logger.warn(`Diff Days: ${diffDays}, Periodicity: ${memory.periodicityDays}, Expected Qty: ${memory.expectedQty}`);
-    return memory;
+  async suggest(actionArguments: Partial<ActionArguments>, state: EnvironmentState, memory: AgentMemoryDocument): Promise<[AgentMemoryDocument, Partial<ShoppingEventItem>]> {
+    Logger.warn(` -> Agent is Suggesting The Item Today`);
+    const suggestedItem: Partial<ShoppingEventItem> = {
+      sku: this.sku,
+      quantity: memory.expectedQty,
+    };
+
+    const diffDays = Math.round(state.today.diff(DateTime.fromJSDate(<Date>memory.lastEvent), 'day').days);
+    const expectedDiffDays = Math.round((memory.periodicityDays + diffDays )/ 2);
+    Logger.warn(`Diff Days: ${diffDays}, Periodicity: ${memory.periodicityDays}, Expected Qty: ${memory.expectedQty}, Expected Diff Days: ${expectedDiffDays}`);
+    memory.periodicityDays = expectedDiffDays;
+    await memory.save();
+    Logger.warn(` <- Agent Suggested The Item Today`);
+    return [memory, suggestedItem];
   }
 }

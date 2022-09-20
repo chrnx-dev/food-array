@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node -r dotenv/config -r tsconfig-paths/register index.ts",
-    "populate": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/populate-events.ts",
+    "populate:events": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/populate-events.ts",
+    "populate:sku": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/populate-skus.ts",
     "swarm:init": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/initialize-swarm.ts"
   },
   "author": "",

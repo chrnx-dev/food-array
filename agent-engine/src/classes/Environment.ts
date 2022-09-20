@@ -77,82 +77,8 @@ export default class Environment extends EnvironmentContract {
   }
 
 
-  async getState(date: DateTime, sku: string): Promise<any> {
-    const shoppingEvents = await this.shoppingEventService.getShoppingEventsFromSku(sku, 10);
-
-    if (!shoppingEvents?.length) {
-      return null;
-    }
-
-    const initEvent = last(shoppingEvents);
-    const lastEvent = first(shoppingEvents);
-
-    const reversedEvents = shoppingEvents.reverse();
-
-    const eventsAccumulator = [];
-
-    for (let index = 1; index <= reversedEvents.length - 1; index++) {
-      const currentEvent = reversedEvents[index];
-      const pastEvent = reversedEvents[index - 1];
-
-      const currentItem = this.getItemBySku(sku, currentEvent.items);
-      const pastItem = this.getItemBySku(sku, pastEvent.items);
-
-      const currentEventDate = DateTime.fromJSDate(currentEvent.date);
-      const pastEventDate = DateTime.fromJSDate(pastEvent.date);
-
-      eventsAccumulator.push({
-        diffDays: currentEventDate.diff(pastEventDate, 'days').days,
-        purchasedItems: currentItem.qty,
-        differenceItems: currentItem.qty - pastItem.qty
-      });
-    }
-
-    const diffDaysData = eventsAccumulator.map((e) => e.diffDays);
-    const purchasedItems = eventsAccumulator.map((p) => p.purchasedItems);
-
-    console.log({
-      data: diffDaysData,
-      mean: stats.mean(diffDaysData),
-      median: stats.medianSorted(diffDaysData),
-      mode: stats.mode(diffDaysData),
-      harmonicMean: stats.harmonicMean(diffDaysData),
-      skewness: stats.sampleSkewness(diffDaysData)
-    });
-
-    console.log({
-      data: purchasedItems,
-      mean: stats.mean(purchasedItems),
-      median: stats.medianSorted(purchasedItems),
-      mode: stats.mode(purchasedItems),
-      harmonicMean: stats.harmonicMean(purchasedItems),
-      skewness: stats.sampleSkewness(purchasedItems)
-    });
-
-    /*
-        for (const shoppingIndex of shoppingEvents.reverse()) {
-            if (shoppingIndex === 0) {
-                continue;
-            }
-
-            const shoppingEventDate = DateTime.fromJSDate(shoppingEvents.date);
-            const shoppingEventItem = shoppingEvent.items.find((item: { sku: string; }) => item.sku === sku);
-
-            console.log(shoppingEventItem, shoppingEventDate.toString(), date.toString());
-        }
-        */
-
-    const startPeriod = DateTime.fromJSDate(initEvent.date).startOf('week');
-    const period = Interval.fromDateTimes(startPeriod, date);
-
-    console.log(startPeriod.toString(), date.toString(), date.diff(startPeriod, 'weeks').weeks);
-
-    const state = {
-      period: period.length('days'),
-      sku,
-      lastShoppingEvent: lastEvent.date,
-      firstShoppingEvent: initEvent.date
-    } as any;
+  async getLatestSuggestedEventByDate(date: DateTime): Promise<any> {
+    return this.shoppingEventService.getShoppingEvent(date, true);
   }
 
   async react(): Promise<any> {

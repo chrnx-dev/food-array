@@ -1,5 +1,5 @@
 import { AgentMemoryInterface, AgentMemorySchema } from '@database/schemas/AgentMemory';
-import { model, Types } from 'mongoose';
+import { model, Types, Document } from 'mongoose';
 
 const AgentMemoryModel = model<AgentMemoryInterface>('agents.memory', AgentMemorySchema);
 export default AgentMemoryModel;

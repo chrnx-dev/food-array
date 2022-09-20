@@ -8,10 +8,10 @@ export default class ShoppingEventService {
     return ShoppingEventModel.find({ 'items.sku': sku, isSuggested: false }).sort({ date: -1 }).limit(eventsHistory).lean();
   }
 
-  async getShoppingEvent(date: DateTime) {
+  async getShoppingEvent(date: DateTime, isSuggested: boolean = false): Promise<ShoppingEventInterface[]> {
     return ShoppingEventModel.find({
       $and: [{ date: { $gte: date.startOf('day').toISO() } }, { date: { $lte: date.endOf('day').toISO() } }],
-      isSuggested: false
+      isSuggested
     }).lean();
   }
 
@@ -22,10 +22,11 @@ export default class ShoppingEventService {
       .lean();
   }
 
-  async getLatestEvents(howMuch: number = 10): Promise<ShoppingEventInterface[]> {
+  async getLatestEvents(howMuch: number = 10, excludeSKUs: string[] = []): Promise<ShoppingEventInterface[]> {
     return shoppingEventModel
       .find({
-        isSuggested: false
+        isSuggested: false,
+        'items.sku': { $nin: excludeSKUs }
       })
       .sort({ date: -1})
       .limit(howMuch)
