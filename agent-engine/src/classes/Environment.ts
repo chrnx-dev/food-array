@@ -16,7 +16,7 @@ export default class Environment extends EnvironmentContract {
 
     const [shoppingEvents, todayEvents] = await Promise.all([
       this.shoppingEventService.getShoppingEventsFromSku(sku, history),
-      this.shoppingEventService.getShoppingEvent(today)
+      this.shoppingEventService.getShoppingEvent(today.toUTC())
     ]);
 
     return {
@@ -77,8 +77,8 @@ export default class Environment extends EnvironmentContract {
   }
 
 
-  async getLatestSuggestedEventByDate(date: DateTime): Promise<any> {
-    return this.shoppingEventService.getShoppingEvent(date, true);
+  async getLatestSuggestion(sku: string): Promise<any> {
+    return this.shoppingEventService.getLatestEvent(sku, true);
   }
 
   async react(): Promise<any> {

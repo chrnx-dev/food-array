@@ -1,10 +1,9 @@
-import { AgentMemoryInterface } from "@database/schemas/AgentMemory";
 import {ActionArguments, EnvironmentState, SwarmPreferences} from "@commons/interfaces/interfaces";
 import {AgentActions} from "@commons/enums/agent-actions";
 import Environment from "@classes/Environment";
 import AgentService from "../services/AgentService";
 import {AgentMemoryDocument} from "@database/models/AgentMemory";
-import {first, last, size} from "lodash";
+import {last} from "lodash";
 import {DateTime} from "luxon";
 import Logger from "@classes/Logger";
 import chalk from "chalk";
@@ -91,15 +90,17 @@ export default abstract class AgentContract {
     }
 
     // Agent detect user bought a product today.
+    Logger.warn(`${this.headerLog()} [ADJUST] Current event: ${state.currentEvent.length}`);
     if (memory && state.currentEvent.length) {
       return [AgentActions.ADJUST, { currentEvents: state.currentEvent }];
     }
 
     // Agent made a suggestion to user.
+    const latestSuggestions= await this.env.getLatestSuggestion(this.sku);
     const diffDays = Math.round(state.today.diff(DateTime.fromJSDate(<Date>memory.lastEvent), 'day').days);
     const minDays = memory.periodicityDays - (this.settings.suggestedToleranceDays || 0);
-    const isAlreadySuggestedEvent = this.env.getLatestSuggestedEventByDate(state.today);
-    const canSuggest = !size(isAlreadySuggestedEvent) && (minDays <= diffDays || diffDays >= memory.periodicityDays);
+    const suggestedDays =latestSuggestions && Math.round(state.today.diff(DateTime.fromJSDate(<Date>latestSuggestions.date), 'day').days);
+    const canSuggest = minDays <= diffDays || diffDays >= memory.periodicityDays;
 
     Logger.debug(`Suggested: ${!!memory}, Today Weekday ${state.today.weekday}, System Suggested ${this.settings.suggestedWeekDayPreference} - Can Suggest ${canSuggest} - ${memory.periodicityDays}- ${diffDays} - ${minDays} `);
     if (memory && state.today.weekday === this.settings.suggestedWeekDayPreference && canSuggest) {

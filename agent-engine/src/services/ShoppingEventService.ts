@@ -15,17 +15,20 @@ export default class ShoppingEventService {
     }).lean();
   }
 
-  async getLatestEvent(): Promise<ShoppingEventInterface> {
+  async getLatestEvent(sku: string, isSuggested: boolean = false): Promise<ShoppingEventInterface> {
     return ShoppingEventModel
-      .findOne()
+      .findOne({
+        'items.sku': sku,
+        isSuggested
+      })
       .sort({ date: -1})
       .lean();
   }
 
-  async getLatestEvents(howMuch: number = 10, excludeSKUs: string[] = []): Promise<ShoppingEventInterface[]> {
+  async getLatestEvents(howMuch: number = 10, excludeSKUs: string[] = [], isSuggested: boolean = false): Promise<ShoppingEventInterface[]> {
     return shoppingEventModel
       .find({
-        isSuggested: false,
+        isSuggested,
         'items.sku': { $nin: excludeSKUs }
       })
       .sort({ date: -1})
