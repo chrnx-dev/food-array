@@ -17,7 +17,9 @@ async function main() {
     {sku: "7", name: "Chile"},
     {sku: "8", name: "Sal"},
     {sku: "9", name: "Pimienta"},
-    {sku: "10", name: "Azucar"}
+    {sku: "10", name: "Azucar"},
+    {sku: "11", name: "Cebolla"},//Adicion de ejemplos para comprobar funcionamiento
+    {sku: "10", name: "Patatas"}
   ];
 
   await SkuModel.deleteMany({});

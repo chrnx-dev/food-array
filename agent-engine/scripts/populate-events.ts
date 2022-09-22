@@ -25,7 +25,9 @@ async function main() {
     [{ sku: "7", name: "Chile"}, [6,15]],
     [{ sku: "8", name: "Sal"}, [1, 5]],
     [{ sku: "9", name: "Pimienta"}, [1,3]],
-    [{ sku: "10", name: "Azucar"}, [2,7]]
+    [{ sku: "10", name: "Azucar"}, [2,7]],
+    [{ sku: "11", name: "Cebolla"}, [1,3]],//Adicion de ejemplos para comprobar funcionamiento
+    [{ sku: "12", name: "Patatas"}, [2,7]]
   ];
 
   await ShoppingEventModel.deleteMany({});
