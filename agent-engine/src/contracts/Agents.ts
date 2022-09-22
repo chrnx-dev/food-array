@@ -78,7 +78,7 @@ export default abstract class AgentContract {
 
     // Agent is Reviewing a Product for appropriate plan.
     if (memory && !memory.initialized && state.history.length <= this.settings.minimumEventsToReview!) {
-      const lastEvent = last(state.history);
+      const lastEvent = state.history.at(-1);
       const lastEventReviewed = memory.lastEvent && DateTime.fromJSDate(memory.lastEvent);
 
       // Already Reviewed so not need to review again.

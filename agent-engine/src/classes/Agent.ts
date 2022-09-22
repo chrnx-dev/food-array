@@ -124,6 +124,7 @@ export default class Agent extends AgentContract implements AgentActionContract 
     Logger.info(`QTY  : Mean[${mean(qtyData)}], Median [${medianSorted(qtyData.sort())}], Mode [${mode(qtyData.sort())}], Harmonic Mean [${harmonicMean(qtyData)}]`);
     memory.expectedQty = Math.round(medianSorted(qtyData.sort()));
     memory.periodicityDays = Math.round(medianSorted(diffDays.sort()));
+    memory.lastEvent = <Date>history.at(-1)?.date.toJSDate();
 
     Logger.info(" -> Agent Reviewed The Item");
     return memory.save();
