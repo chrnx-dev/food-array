@@ -99,12 +99,13 @@ export default abstract class AgentContract {
     const latestSuggestions= await this.env.getLatestSuggestion(this.sku);
     const diffDays = Math.round(state.today.diff(DateTime.fromJSDate(<Date>memory.lastEvent), 'day').days);
     const minDays = memory.periodicityDays - (this.settings.suggestedToleranceDays || 0);
-    const suggestedDays =latestSuggestions && Math.round(state.today.diff(DateTime.fromJSDate(<Date>latestSuggestions.date), 'day').days);
-    const canSuggest = minDays <= diffDays || diffDays >= memory.periodicityDays;
+    const suggestedDays =latestSuggestions ? Math.round(state.today.diff(DateTime.fromJSDate(<Date>latestSuggestions.date), 'day').days) : -99;
+    const canSuggest = (minDays <= diffDays || diffDays >= memory.periodicityDays) && (suggestedDays >= memory.periodicityDays || suggestedDays < 0);
 
+    Logger.error(`${this.headerLog()} [SUGGEST] Latest Suggestions: ${JSON.stringify(latestSuggestions)} - ${suggestedDays} - ${state.currentEvent.length}`);
     Logger.debug(`Suggested: ${!!memory}, Today Weekday ${state.today.weekday}, System Suggested ${this.settings.suggestedWeekDayPreference} - Can Suggest ${canSuggest} - ${memory.periodicityDays}- ${diffDays} - ${minDays} `);
     if (memory && state.today.weekday === this.settings.suggestedWeekDayPreference && canSuggest) {
-      return [AgentActions.SUGGEST, {}];
+      return [AgentActions.HOLD, {}];
     }
 
     return [AgentActions.HOLD, {}];

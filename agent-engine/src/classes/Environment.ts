@@ -16,7 +16,7 @@ export default class Environment extends EnvironmentContract {
 
     const [shoppingEvents, todayEvents] = await Promise.all([
       this.shoppingEventService.getShoppingEventsFromSku(sku, history),
-      this.shoppingEventService.getShoppingEvent(today.toUTC())
+      this.shoppingEventService.getShoppingEvent(today, sku)
     ]);
 
     return {

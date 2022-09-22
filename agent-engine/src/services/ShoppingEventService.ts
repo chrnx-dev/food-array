@@ -2,16 +2,18 @@ import ShoppingEventModel from '@database/models/ShoppingEventModel';
 import { DateTime } from 'luxon';
 import {ShoppingEventInterface} from "@database/schemas/ShoppingEventSchema";
 import shoppingEventModel from "@database/models/ShoppingEventModel";
+import sku from "@database/models/Sku";
 
 export default class ShoppingEventService {
   async getShoppingEventsFromSku(sku: string, eventsHistory: number = 4): Promise<any[]> {
     return ShoppingEventModel.find({ 'items.sku': sku, isSuggested: false }).sort({ date: -1 }).limit(eventsHistory).lean();
   }
 
-  async getShoppingEvent(date: DateTime, isSuggested: boolean = false): Promise<ShoppingEventInterface[]> {
+  async getShoppingEvent(date: DateTime, sku: string, isSuggested: boolean = false): Promise<ShoppingEventInterface[]> {
     return ShoppingEventModel.find({
       $and: [{ date: { $gte: date.startOf('day').toISO() } }, { date: { $lte: date.endOf('day').toISO() } }],
-      isSuggested
+      isSuggested,
+      "items.sku": sku,
     }).lean();
   }
 
