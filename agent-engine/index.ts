@@ -9,7 +9,8 @@ async function main() {
 
   try {
     const swarm = new SwarmAgents();
-    await swarm.run();
+    // await swarm.run();
+    await swarm.runWorker()
   } catch (e) {
     console.log(e);
   } finally {

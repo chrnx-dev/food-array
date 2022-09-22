@@ -30,3 +30,8 @@ export interface ActionArguments {
 export interface Suggestion {
   qty: number;
 }
+
+export interface SwarmAgentSettings {
+  sku: string;
+  settings: SwarmPreferences;
+}

@@ -86,12 +86,12 @@ export default class Agent extends AgentContract implements AgentActionContract 
       throw new Error("No History Found");
     }
 
-    Logger.info(`Initialize Agent for ${this.sku} - Should initialize? ${actionArguments.shouldInitialize ? "YES" : "NO"}`);
+    Logger.verbose(`Initialize Agent for ${this.sku} - Should initialize? ${actionArguments.shouldInitialize ? "YES" : "NO"}`);
     memory.sku = this.sku;
     memory.lastEvent =  lastEvent?.date.toJSDate();
 
     if (actionArguments.shouldInitialize) {
-      Logger.info(`Initialized Agent`);
+      Logger.verbose(`Initialized Agent`);
       return this.review(actionArguments, state, memory);
     }
     Logger.info(" -> Initialized Agent");
@@ -115,13 +115,12 @@ export default class Agent extends AgentContract implements AgentActionContract 
         throw new Error("No History Found");
       }
 
-      Logger.info(currentEvent.date.toISO() );
       diffDays.push(currentEvent.date.diff(pastEvent.date, 'day').days);
       qtyData.push(currentEvent.qty)
     }
-    Logger.info(diffDays, qtyData);
-    Logger.info(`Days : Mean[${mean(diffDays)}], Median [${medianSorted(diffDays.sort())}], Mode [${mode(diffDays.sort())}], Harmonic Mean [${harmonicMean(diffDays)}]`);
-    Logger.info(`QTY  : Mean[${mean(qtyData)}], Median [${medianSorted(qtyData.sort())}], Mode [${mode(qtyData.sort())}], Harmonic Mean [${harmonicMean(qtyData)}]`);
+
+    Logger.verbose(`Days : Mean[${mean(diffDays)}], Median [${medianSorted(diffDays.sort())}], Mode [${mode(diffDays.sort())}], Harmonic Mean [${harmonicMean(diffDays)}]`);
+    Logger.verbose(`QTY  : Mean[${mean(qtyData)}], Median [${medianSorted(qtyData.sort())}], Mode [${mode(qtyData.sort())}], Harmonic Mean [${harmonicMean(qtyData)}]`);
     memory.expectedQty = Math.round(medianSorted(qtyData.sort()));
     memory.periodicityDays = Math.round(medianSorted(diffDays.sort()));
     memory.lastEvent = <Date>history.at(-1)?.date.toJSDate();
@@ -131,7 +130,7 @@ export default class Agent extends AgentContract implements AgentActionContract 
   }
 
   async suggest(actionArguments: Partial<ActionArguments>, state: EnvironmentState, memory: AgentMemoryDocument): Promise<[AgentMemoryDocument, Partial<ShoppingEventItem>]> {
-    Logger.warn(` -> Agent is Suggesting The Item Today`);
+    Logger.info(` -> Agent is Suggesting The Item Today`);
     const suggestedItem: Partial<ShoppingEventItem> = {
       sku: this.sku,
       quantity: memory.expectedQty,
@@ -139,10 +138,10 @@ export default class Agent extends AgentContract implements AgentActionContract 
 
     const diffDays = Math.round(state.today.diff(DateTime.fromJSDate(<Date>memory.lastEvent), 'day').days);
     const expectedDiffDays = Math.round((memory.periodicityDays + diffDays )/ 2);
-    Logger.warn(`Diff Days: ${diffDays}, Periodicity: ${memory.periodicityDays}, Expected Qty: ${memory.expectedQty}, Expected Diff Days: ${expectedDiffDays}`);
+    Logger.verbose(`Diff Days: ${diffDays}, Periodicity: ${memory.periodicityDays}, Expected Qty: ${memory.expectedQty}, Expected Diff Days: ${expectedDiffDays}`);
     memory.periodicityDays = expectedDiffDays;
     await memory.save();
-    Logger.warn(` <- Agent Suggested The Item Today`);
+    Logger.info(` <- Agent Suggested The Item Today`);
     return [memory, suggestedItem];
   }
 }
