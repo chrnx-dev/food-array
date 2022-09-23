@@ -90,7 +90,7 @@ export default class SwarmAgents {
   async run() {
     const settings = await this.setup();
     const swarmAgents: SwarmAgentSettings[] = await this.percept(settings);
-    const maxWorkers = cpus().length / 2;
+    const maxWorkers = Math.ceil(cpus().length / 2);
 
     await this.react(swarmAgents, maxWorkers);
   }
