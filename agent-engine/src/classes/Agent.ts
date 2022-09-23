@@ -41,10 +41,7 @@ export default class Agent extends AgentContract implements AgentActionContract 
 
   // @ts-ignore
   async adjust(actionArguments: Partial<ActionArguments>, state: EnvironmentState, memory: AgentMemoryDocument): Promise<AgentMemoryDocument> {
-    Logger.info(`${this.headerLog()} [ADJUST] -> Agent is Adjusting The Item`);
-
     const currentEvent = state.currentEvent.at(0);
-
     if (!currentEvent)  throw  new Error("No Current Event Found");
 
     const { date, qty } = currentEvent;
@@ -53,29 +50,22 @@ export default class Agent extends AgentContract implements AgentActionContract 
     const diffDays = Math.round(date.diff(DateTime.fromJSDate(<Date>lastEvent), 'day').days);
 
     if (diffDays === 0) {
-        Logger.info(`${this.headerLog()} [ADJUST] No Adjust Need It.`);
         return memory;
     }
 
     const expectedDiffDays = Math.round((periodicityDays + diffDays )/ 2);
     const expectedQty = Math.round((memExpectedQty + (qty || 0)) / 2);
 
-    Logger.info(`${this.headerLog()} [ADJUST] Current Periodicity:  ${periodicityDays}, Current Qty: ${memExpectedQty}`);
-    Logger.info(`${this.headerLog()} [ADJUST] Expected Periodicity: ${expectedDiffDays}, Expected Qty: ${expectedQty}`);
-
     memory.expectedQty = expectedQty;
     memory.periodicityDays = expectedDiffDays;
     memory.lastEvent = date.toJSDate();
-
-    Logger.info(`${this.headerLog()} [ADJUST] <- Agent Adjusted The Item`);
 
     return memory.save();
   }
 
   // @ts-ignore
   async hold() {
-    Logger.info(`${this.headerLog()} [HOLD] -> Agent is Holding The Item`);
-    Logger.info(`${this.headerLog()} [HOLD] <- Agent Held The Item`);
+    Logger.info(`${this.headerLog()} [HOLD] - Agent Held The Item`);
   }
 
   async initialize(actionArguments: Partial<ActionArguments>, state: EnvironmentState): Promise<AgentMemoryDocument> {
@@ -86,20 +76,17 @@ export default class Agent extends AgentContract implements AgentActionContract 
       throw new Error("No History Found");
     }
 
-    Logger.verbose(`Initialize Agent for ${this.sku} - Should initialize? ${actionArguments.shouldInitialize ? "YES" : "NO"}`);
+
     memory.sku = this.sku;
     memory.lastEvent =  lastEvent?.date.toJSDate();
 
     if (actionArguments.shouldInitialize) {
-      Logger.verbose(`Initialized Agent`);
       return this.review(actionArguments, state, memory);
     }
-    Logger.info(" -> Initialized Agent");
     return memory.save();
   }
 
   async review(actionArguments: Partial<ActionArguments>, state: EnvironmentState, memory:  AgentMemoryDocument): Promise<AgentMemoryDocument> {
-    Logger.info(" -> Agent is Reviewing The Item");
     const history = state.history;
     const canMarkedAsInitialized =  history.length >= (this.settings.minimumEventsToReview || 0);
     memory.initialized = canMarkedAsInitialized;
@@ -119,18 +106,14 @@ export default class Agent extends AgentContract implements AgentActionContract 
       qtyData.push(currentEvent.qty)
     }
 
-    Logger.verbose(`Days : Mean[${mean(diffDays)}], Median [${medianSorted(diffDays.sort())}], Mode [${mode(diffDays.sort())}], Harmonic Mean [${harmonicMean(diffDays)}]`);
-    Logger.verbose(`QTY  : Mean[${mean(qtyData)}], Median [${medianSorted(qtyData.sort())}], Mode [${mode(qtyData.sort())}], Harmonic Mean [${harmonicMean(qtyData)}]`);
     memory.expectedQty = Math.round(medianSorted(qtyData.sort()));
     memory.periodicityDays = Math.round(medianSorted(diffDays.sort()));
     memory.lastEvent = <Date>history.at(-1)?.date.toJSDate();
 
-    Logger.info(" -> Agent Reviewed The Item");
     return memory.save();
   }
 
   async suggest(actionArguments: Partial<ActionArguments>, state: EnvironmentState, memory: AgentMemoryDocument): Promise<[AgentMemoryDocument, Partial<ShoppingEventItem>]> {
-    Logger.info(` -> Agent is Suggesting The Item Today`);
     const suggestedItem: Partial<ShoppingEventItem> = {
       sku: this.sku,
       quantity: memory.expectedQty,
@@ -138,10 +121,8 @@ export default class Agent extends AgentContract implements AgentActionContract 
 
     const diffDays = Math.round(state.today.diff(DateTime.fromJSDate(<Date>memory.lastEvent), 'day').days);
     const expectedDiffDays = Math.round((memory.periodicityDays + diffDays )/ 2);
-    Logger.verbose(`Diff Days: ${diffDays}, Periodicity: ${memory.periodicityDays}, Expected Qty: ${memory.expectedQty}, Expected Diff Days: ${expectedDiffDays}`);
     memory.periodicityDays = expectedDiffDays;
     await memory.save();
-    Logger.info(` <- Agent Suggested The Item Today`);
     return [memory, suggestedItem];
   }
 }

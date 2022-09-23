@@ -15,6 +15,12 @@ const logger = createLogger({
 });
 
 export default class Logger {
+
+  static log(title: string, subtitle: string, level: string = 'info') {
+    // @ts-ignore
+    logger.log(...arguments);
+  }
+
   static error(...args: any[]) {
     // @ts-ignore
     logger.error(...args);

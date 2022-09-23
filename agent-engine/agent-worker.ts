@@ -1,22 +1,37 @@
 import 'reflect-metadata';
 import { parentPort, workerData } from 'worker_threads';
-import Logger from "@classes/Logger";
-import Agent from "@classes/Agent";
-import { delay } from "bluebird";
-import {random} from "lodash";
-import DatabaseEngine from "@database/DatabaseEngine";
+import Logger from '@classes/Logger';
+import Agent from '@classes/Agent';
+import DatabaseEngine from '@database/DatabaseEngine';
+import SkuModel from '@database/models/Sku';
+import { ShoppingEventItem } from '@database/schemas/ShoppingEventSchema';
 
 executeAgent();
 
 async function executeAgent() {
-  const { agent: aggentSettings  } = workerData;
-
-  const agent = new Agent(aggentSettings.sku, aggentSettings.settings);
-  Logger.info(`Running Agent ${agent.getSku()}...`);
   const connection = await DatabaseEngine.initialize();
-  const [_, suggestedItem, action] = await agent.execute();
-  console.log(suggestedItem, action);
-  await connection.disconnect();
-  await delay(random(5000, 15000));
-  parentPort?.postMessage(`Finished running agent ${agent.getSku()}`);
+
+  try {
+    let suggestion;
+    const { agent: aggentSettings } = workerData;
+
+    const agent = new Agent(aggentSettings.sku, aggentSettings.settings);
+    const [skuInformation, executeResults] = await Promise.all([await SkuModel.findOne({ sku: agent.getSku() }), await agent.execute()]);
+
+    const [_, suggestedItem, action] = executeResults;
+    if (action === 'SUGGEST' && suggestedItem) {
+      suggestion = {
+        name: skuInformation?.name || '',
+        sku: skuInformation?.sku || '',
+        quantity: suggestedItem.quantity
+      } as ShoppingEventItem;
+    }
+
+    parentPort?.postMessage([action, suggestion]);
+  } catch (e) {
+    // @ts-ignore
+    parentPort?.postMessage(['ERROR', e.message]);
+  } finally {
+    await connection.disconnect();
+  }
 }

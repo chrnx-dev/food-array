@@ -29,15 +29,11 @@ export default abstract class AgentContract {
   }
 
   async execute(): Promise<[AgentMemoryDocument, Partial<ShoppingEventItem> | null, AgentActions]> {
-    Logger.info(`${this.headerLog()} Start Execution`);
-
     const memory: AgentMemoryDocument = await this.agentService.getMemory(this.sku);
     const state: EnvironmentState = await this.percept();
-
     const [action, data] = await this.rationale(state, memory);
     const [modifiedMemory, suggestedItem]: [AgentMemoryDocument, Partial<ShoppingEventItem> | null] = await this.react(action, data, memory, state);
 
-    Logger.info(`${this.headerLog()} End Execution`);
     return [modifiedMemory, suggestedItem, action];
   }
 
@@ -47,17 +43,10 @@ export default abstract class AgentContract {
 
   async percept(): Promise<EnvironmentState> {
     const state: EnvironmentState = await this.env.perceive(this.sku, this.settings.minimumEventsToReview);
-    Logger.verbose(`${this.headerLog()} [PERCEPT] Perception Date: ${state.today.toISODate()}`);
-    Logger.verbose(`${this.headerLog()} [PERCEPT] Minimum to Review: ${this.settings.minimumEventsToReview}`);
-    Logger.verbose(`${this.headerLog()} [PERCEPT] Week: ${state.startOfWeek.toISODate()} - ${state.endOfWeek.toISODate()}`);
-    Logger.verbose(`${this.headerLog()} [PERCEPT] Events history: ${state.history.length}`);
-    Logger.verbose(`${this.headerLog()} [PERCEPT] Current event: ${state.currentEvent.length}`);
-
     return state;
   }
 
   async rationale(state: EnvironmentState, memory: AgentMemoryDocument): Promise<[AgentActions, Partial<ActionArguments>]> {
-    Logger.verbose(`${this.headerLog()} [RATIONALE] Current event: ${state.currentEvent.length}`);
     // First Time Agent Saw a Product
     if (!memory && state.history.length) {
       return [
@@ -82,7 +71,6 @@ export default abstract class AgentContract {
     }
 
     // Agent detect user bought a product today.
-    Logger.warn(`${this.headerLog()} [ADJUST] Current event: ${state.currentEvent.length}`);
     if (memory && state.currentEvent.length) {
       return [AgentActions.ADJUST, { currentEvents: state.currentEvent }];
     }
@@ -94,8 +82,6 @@ export default abstract class AgentContract {
     const suggestedDays =latestSuggestions ? Math.round(state.today.diff(DateTime.fromJSDate(<Date>latestSuggestions.date), 'day').days) : -99;
     const canSuggest = (minDays <= diffDays || diffDays >= memory.periodicityDays) && (suggestedDays >= memory.periodicityDays || suggestedDays < 0);
 
-    Logger.verbose(`${this.headerLog()} [SUGGEST] Latest Suggestions: ${JSON.stringify(latestSuggestions)} - ${suggestedDays} - ${state.currentEvent.length}`);
-    Logger.verbose(`Suggested: ${!!memory}, Today Weekday ${state.today.weekday}, System Suggested ${this.settings.suggestedWeekDayPreference} - Can Suggest ${canSuggest} - ${memory.periodicityDays}- ${diffDays} - ${minDays} `);
     if (memory && state.today.weekday === this.settings.suggestedWeekDayPreference && canSuggest) {
       return [AgentActions.HOLD, {}];
     }
