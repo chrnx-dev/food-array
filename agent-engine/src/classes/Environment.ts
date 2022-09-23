@@ -2,9 +2,9 @@ import EnvironmentContract from '@contracts/Environments';
 import { injectable } from 'inversify';
 import { first, last } from 'lodash';
 import { DateTime, Interval } from 'luxon';
-import ShoppingEventService from 'src/services/ShoppingEventService';
+import ShoppingEventService from '@src/services/ShoppingEventService';
 import * as stats from 'simple-statistics';
-import { EnvironmentState, NormalizedEvent } from 'src/commons/interfaces/interfaces';
+import { EnvironmentState, NormalizedEvent } from '@src/commons/interfaces/interfaces';
 
 @injectable()
 export default class Environment extends EnvironmentContract {

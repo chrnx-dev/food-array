@@ -48,7 +48,7 @@ export default abstract class AgentContract {
 
   async rationale(state: EnvironmentState, memory: AgentMemoryDocument): Promise<[AgentActions, Partial<ActionArguments>]> {
     // First Time Agent Saw a Product
-    if (!memory && state.history.length) {
+    if (!memory) {
       return [
         AgentActions.INITIALIZE,
         {

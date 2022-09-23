@@ -7,7 +7,8 @@
     "start": "ts-node -r dotenv/config -r tsconfig-paths/register index.ts",
     "populate:events": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/populate-events.ts",
     "populate:sku": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/populate-skus.ts",
-    "swarm:init": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/initialize-swarm.ts"
+    "swarm:init": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/initialize-swarm.ts",
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
@@ -18,6 +19,7 @@
     "@types/jest": "^29.0.3",
     "@types/lodash": "^4.14.184",
     "@types/luxon": "^3.0.0",
+    "@types/mockingoose": "^2.13.0",
     "@types/mongoose": "^5.11.97",
     "@types/node": "^18.7.13",
     "@types/reflect-metadata": "^0.1.0",
