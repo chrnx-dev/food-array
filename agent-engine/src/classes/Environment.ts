@@ -1,9 +1,8 @@
 import EnvironmentContract from '@contracts/Environments';
 import { injectable } from 'inversify';
-import { first, last } from 'lodash';
+import { last } from 'lodash';
 import { DateTime, Interval } from 'luxon';
 import ShoppingEventService from '@src/services/ShoppingEventService';
-import * as stats from 'simple-statistics';
 import { EnvironmentState, NormalizedEvent } from '@src/commons/interfaces/interfaces';
 
 @injectable()
@@ -28,9 +27,6 @@ export default class Environment extends EnvironmentContract {
     } as EnvironmentState;
   }
 
-  private getItemBySku(sku: string, shoppingDetails: any[]) {
-    return shoppingDetails.find((item: { sku: string }) => item.sku === sku);
-  }
 
   private eventsNormalizer(shoppingEvents: any[], sku: string): NormalizedEvent[] {
     const eventsAccumulator: any[] = [];

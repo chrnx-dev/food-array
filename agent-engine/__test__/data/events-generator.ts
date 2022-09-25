@@ -1,6 +1,15 @@
 import {v4} from "uuid";
 import {DateTime} from "luxon";
 
+export function eventGenerator(sku: string, qty: number, dayBefore: number = 0, isSuggested: boolean = false): any {
+  return {
+    _id: v4(),
+    date: DateTime.utc().minus({days: dayBefore}).toJSDate(),
+    items: [{ sku, quantity: qty, name: "test" }],
+    isSuggested
+  }
+}
+
 export function eventsGenerator(sku: string, qtys: number[], events: number[]): any[] {
 
   if (qtys.length !== events.length) {
@@ -12,13 +21,7 @@ export function eventsGenerator(sku: string, qtys: number[], events: number[]): 
     const qty = qtys[i];
     const event = events[i];
 
-    eventsList.push({
-      _id: v4(),
-      date: DateTime.utc().minus({days: event}).toJSDate(),
-      items: [
-        {sku: sku, quantity: qty, name: "test"},
-      ]
-    });
+    eventsList.push(eventGenerator(sku, qty, event));
   }
 
 

@@ -83,7 +83,7 @@ export default abstract class AgentContract {
     const canSuggest = (minDays <= diffDays || diffDays >= memory.periodicityDays) && (suggestedDays >= memory.periodicityDays || suggestedDays < 0);
 
     if (memory && state.today.weekday === this.settings.suggestedWeekDayPreference && canSuggest) {
-      return [AgentActions.HOLD, {}];
+      return [AgentActions.SUGGEST, {}];
     }
 
     return [AgentActions.HOLD, {}];
