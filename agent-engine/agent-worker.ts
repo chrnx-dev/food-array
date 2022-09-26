@@ -5,12 +5,17 @@ import Agent from '@classes/Agent';
 import DatabaseEngine from '@database/DatabaseEngine';
 import SkuModel from '@database/models/Sku';
 import { ShoppingEventItem } from '@database/schemas/ShoppingEventSchema';
+import {DateTime, Settings} from "luxon";
 
 executeAgent();
 
 async function executeAgent() {
-  const connection = await DatabaseEngine.initialize();
+  console.log('workerData', workerData);
+  if (workerData?.isTest) {
+    Settings.now = () => DateTime.fromJSDate(workerData.changeDate).toMillis();
+  }
 
+  const connection = await DatabaseEngine.initialize();
   try {
     let suggestion;
     const { agent: aggentSettings } = workerData;
@@ -28,8 +33,9 @@ async function executeAgent() {
     }
 
     parentPort?.postMessage([action, suggestion]);
-  } catch (e) {
+  } catch (e: any) {
     // @ts-ignore
+    Logger.error(`workerData - error ${e.message}`);
     parentPort?.postMessage(['ERROR', e.message]);
   } finally {
     await connection.disconnect();

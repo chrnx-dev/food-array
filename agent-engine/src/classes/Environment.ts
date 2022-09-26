@@ -37,7 +37,7 @@ export default class Environment extends EnvironmentContract {
         continue;
       }
 
-      const currentEvent = shoppingEvents[index];
+      const currentEvent = shoppingEvents.at(index);
       const currentEventDate = DateTime.fromJSDate(currentEvent.date);
       const period = Interval.fromDateTimes(currentEventDate.startOf('week'), currentEventDate.endOf('week'));
 

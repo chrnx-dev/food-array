@@ -46,7 +46,6 @@ async function main() {
       shoppingEvent.items.push({ ...item, quantity: randomInt(randomSetting[0], randomSetting[1]) } as ShoppingEventItem);
     }
     shoppingEvents.push(shoppingEvent);
-    console.log(shoppingEvent);
   }
 
   await ShoppingEventModel.insertMany(shoppingEvents);

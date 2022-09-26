@@ -4,9 +4,13 @@
  */
 /** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
 const {pathsToModuleNameMapper} = require('ts-jest');
+const jestTSPreset = require('ts-jest/jest-preset');
+const jestMongoPreset = require('@shelf/jest-mongodb/jest-preset');
 const {compilerOptions} = require('./tsconfig')
 
 module.exports ={
+    ...jestTSPreset,
+    ...jestMongoPreset,
     preset: 'ts-jest',
     // All imported modules in your tests should be mocked automatically
     // automock: false,
