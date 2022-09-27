@@ -107,7 +107,7 @@ export default class Agent extends AgentContract implements AgentActionContract 
     }
 
     memory.expectedQty = Math.round(medianSorted(qtyData.sort()));
-    memory.periodicityDays = Math.round(medianSorted(diffDays.sort()));
+    memory.periodicityDays = Math.round(mean(diffDays.sort()));
     memory.lastEvent = <Date>history.at(-1)?.date.toJSDate();
 
     return memory.save();
@@ -121,7 +121,10 @@ export default class Agent extends AgentContract implements AgentActionContract 
 
     const diffDays = Math.round(state.today.diff(DateTime.fromJSDate(<Date>memory.lastEvent), 'day').days);
     const expectedDiffDays = Math.round((memory.periodicityDays + diffDays )/ 2);
+
     memory.periodicityDays = expectedDiffDays;
+    memory.lastEvent = state.today.toJSDate();
+
     await memory.save();
     return [memory, suggestedItem];
   }

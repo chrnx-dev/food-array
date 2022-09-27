@@ -7,6 +7,7 @@ import {DateTime} from "luxon";
 import Logger from "@classes/Logger";
 import chalk from "chalk";
 import {ShoppingEventItem} from "@database/schemas/ShoppingEventSchema";
+import {omit} from "lodash";
 
 export default abstract class AgentContract {
 
@@ -31,6 +32,7 @@ export default abstract class AgentContract {
   async execute(): Promise<[AgentMemoryDocument, Partial<ShoppingEventItem> | null, AgentActions]> {
     const memory: AgentMemoryDocument = await this.agentService.getMemory(this.sku);
     const state: EnvironmentState = await this.percept();
+
     const [action, data] = await this.rationale(state, memory);
     const [modifiedMemory, suggestedItem]: [AgentMemoryDocument, Partial<ShoppingEventItem> | null] = await this.react(action, data, memory, state);
 
@@ -48,6 +50,7 @@ export default abstract class AgentContract {
 
   async rationale(state: EnvironmentState, memory: AgentMemoryDocument): Promise<[AgentActions, Partial<ActionArguments>]> {
     // First Time Agent Saw a Product
+    const latestEvent = state.currentEvent.at(-1);
     if (!memory) {
       return [
         AgentActions.INITIALIZE,
@@ -80,7 +83,7 @@ export default abstract class AgentContract {
     const diffDays = Math.round(state.today.diff(DateTime.fromJSDate(<Date>memory.lastEvent), 'day').days);
     const minDays = memory.periodicityDays - (this.settings.suggestedToleranceDays || 0);
     const suggestedDays =latestSuggestions ? Math.round(state.today.diff(DateTime.fromJSDate(<Date>latestSuggestions.date), 'day').days) : -99;
-    const canSuggest = (minDays <= diffDays || diffDays >= memory.periodicityDays) && (suggestedDays >= memory.periodicityDays || suggestedDays < 0);
+    const canSuggest = (minDays <= diffDays || diffDays >= memory.periodicityDays) || (suggestedDays >= memory.periodicityDays || suggestedDays < 0);
 
     if (memory && state.today.weekday === this.settings.suggestedWeekDayPreference && canSuggest) {
       return [AgentActions.SUGGEST, {}];
