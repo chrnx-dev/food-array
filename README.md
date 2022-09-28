@@ -7,11 +7,7 @@
   <p align="center">
     An Ecosystem for Automate Groceries with Artificial Intelligence.
     <br />
-    <a href="https://zero-oneit.github.io/expresive-tea/"><strong>Explore the docs »</strong></a>
     <br />
-    <br />
-    <a href="https://codesandbox.io/s/expressive-tea-2kmg7?fontsize=14&hidenavigation=1&theme=dark">View Demo</a>
-    ·
     <a href="https://github.com/zerooneit/food-array/issues">Report Bug</a>
     ·
     <a href="https://github.com/zerooneit/food-array/issues">Request Feature</a>
@@ -144,5 +140,18 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 See also the list of [contributors](https://github.com/zerooneit/food-array/contributors) who participated in this project.
 
 ## Code of Conduct
+Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for details on our code of conduct, and the process for submitting pull requests to us.
 ## References
+
+* Environment, U. N. (2021). UNEP Food Waste Index Report 2021 (p. 8, 20). https://www.unep.org/resources/report/unep-food-waste-index-report-2021
+* Swanson, E., Barnes, M., Fall, A. M., & Roberts, G. (2017). Predictors of Reading Comprehension Among Struggling Readers Who Exhibit Differing Levels of Inattention and Hyperactivity. Reading & Writing Quarterly, 34(2), 132-146. doi:10.1080/10573569.2017.1359712.
+* Mwangi, R. W., & Kamau, A. M. (2016, November). A MODEL BASED REFLEX AGENT FOR SMART FARMING IN FERTILIZER APPLICATION TO MAIZE CROP IN KENYA. In Scientific Conference Proceedings.
+* Castillo-Vergara, M., Alvarez-Marin, A., & Cabana-Villca, R. (2014). Design thinking: cómo guiar a estudiantes, emprendedores y empresarios en su aplicación. Ingeniería Industrial, 35(3), 301-311.
+* Rudoff, H. (s/f). Reducir el desperdicio de alimentos: Lo que usted puede hacer en su casa. City of Philadelphia. Recuperado el 18 de julio de 2022, de https://www.phila.gov/2022-07-11-spanish-eat-away-at-food-waste-at-home/
+* ONU, N. (16 de Octubre de 2018). https://news.un.org/es/story/2018/10/1443382. Obtenido de https://news.un.org/es/story/2018/10/1443382
+* Hicks, J.R., “Valor y Capital”, pág.205, Fondo de Cultura Económica, México DF,1945.
+* de Campos, G. A., Freire, E. S., & Cortés, M. I. (2012). Norm-based behavior modification in reflex agents. In Proceedings on the International Conference on Artificial Intelligence (ICAI) (p. 1). The Steering Committee of The World Congress in Computer Science, Computer Engineering and Applied Computing (WorldComp).
+* Du, H., & Huhns, M. N. (2011). A multiagent system approach to grocery shopping. En Advances in Intelligent and Soft Computing (pp. 195–200). Springer Berlin Heidelberg.
+* Joo, K. H., Kinoshita, T., & Shiratori, N. (2000). Design and implementation of an agent-based grocery shopping system. IEICE transactions on information and systems, E83-D(11), 1940–1951. https://search.ieice.org/bin/summary.php?id=e83-d_11_1940
+* Joo, K. H., Kinoshita, T., & Shiratori, N. (2001). On a decision-making mechanism of an intelligent shopping agent. Interdisciplinary Information Sciences, 7(2), 167–177. https://doi.org/10.4036/iis.2001.167
 
