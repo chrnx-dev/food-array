@@ -59,7 +59,7 @@ export default class Agent extends AgentContract implements AgentActionContract 
     memory.expectedQty = expectedQty;
     memory.periodicityDays = expectedDiffDays;
     memory.lastEvent = date.toJSDate();
-
+    Logger.info(`${this.headerLog()} [ADJUST] - Agent Adjusted The Item`);
     return memory.save();
   }
 
@@ -83,6 +83,8 @@ export default class Agent extends AgentContract implements AgentActionContract 
     if (actionArguments.shouldInitialize) {
       return this.review(actionArguments, state, memory);
     }
+
+    Logger.info(`${this.headerLog()} [INITIALIZE] - Agent Initialized The Item`);
     return memory.save();
   }
 
@@ -109,7 +111,7 @@ export default class Agent extends AgentContract implements AgentActionContract 
     memory.expectedQty = Math.round(medianSorted(qtyData.sort()));
     memory.periodicityDays = Math.round(mean(diffDays.sort()));
     memory.lastEvent = <Date>history.at(-1)?.date.toJSDate();
-
+    Logger.info(`${this.headerLog()} [REVIEW] - Agent Reviewed The Item`);
     return memory.save();
   }
 
@@ -126,6 +128,7 @@ export default class Agent extends AgentContract implements AgentActionContract 
     memory.lastEvent = state.today.toJSDate();
 
     await memory.save();
+    Logger.info(`${this.headerLog()} [SUGGEST] - Agent Suggested The Item`);
     return [memory, suggestedItem];
   }
 }
