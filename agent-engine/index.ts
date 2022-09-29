@@ -19,9 +19,19 @@ const perfObserver = new PerformanceObserver((items) => {
 
 perfObserver.observe({ entryTypes: ["measure"], buffered: true })
 
+console.log(`
+Artificial Intelligence Engine for...
+███████╗ ██████╗  ██████╗ ██████╗      █████╗ ██████╗ ██████╗  █████╗ ██╗   ██╗    
+██╔════╝██╔═══██╗██╔═══██╗██╔══██╗    ██╔══██╗██╔══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝    
+█████╗  ██║   ██║██║   ██║██║  ██║    ███████║██████╔╝██████╔╝███████║ ╚████╔╝     
+██╔══╝  ██║   ██║██║   ██║██║  ██║    ██╔══██║██╔══██╗██╔══██╗██╔══██║  ╚██╔╝      
+██║     ╚██████╔╝╚██████╔╝██████╔╝    ██║  ██║██║  ██║██║  ██║██║  ██║   ██║       
+╚═╝      ╚═════╝  ╚═════╝ ╚═════╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝                                                                                                                                                                                                                                                                                                                                                                                            
+  `);
+
+console.log(`Starting at ${DateTime.local().toFormat('yyyy-MM-dd HH:mm:ss')} and waiting...`);
 cron.schedule('59 23 * * *', async () => {
   performance.mark(CRONMARK_START);
-
   Logger.info(`Running Swarm Agents @ ${DateTime.now().setZone("America/Mexico_City").toISO()}`);
   const connection = await DatabaseEngine.initialize();
 
