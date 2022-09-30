@@ -10,7 +10,6 @@ import {DateTime, Settings} from "luxon";
 executeAgent();
 
 async function executeAgent() {
-  console.log('workerData', workerData);
   if (workerData?.isTest) {
     Settings.now = () => DateTime.fromJSDate(workerData.changeDate).toMillis();
   }
@@ -35,6 +34,7 @@ async function executeAgent() {
     parentPort?.postMessage([action, suggestion]);
   } catch (e: any) {
     // @ts-ignore
+    console.error(e);
     Logger.error(`workerData - error ${e.message}`);
     parentPort?.postMessage(['ERROR', e.message]);
   } finally {

@@ -1,6 +1,6 @@
 import EnvironmentContract from '@contracts/Environments';
 import { injectable } from 'inversify';
-import { last } from 'lodash';
+import {last, takeRightWhile, takeWhile} from 'lodash';
 import { DateTime, Interval } from 'luxon';
 import ShoppingEventService from '@src/services/ShoppingEventService';
 import { EnvironmentState, NormalizedEvent } from '@src/commons/interfaces/interfaces';
@@ -29,45 +29,33 @@ export default class Environment extends EnvironmentContract {
 
 
   private eventsNormalizer(shoppingEvents: any[], sku: string): NormalizedEvent[] {
-    const eventsAccumulator: any[] = [];
-    const mergedEventsIndex: number[] = [];
+    if (!shoppingEvents.length) {
+      return [];
+    }
 
-    for (let index = 0; index < shoppingEvents.length; index++) {
-      if (mergedEventsIndex.includes(index)) {
-        continue;
-      }
+    const eventsAccumulator: NormalizedEvent[] = [];
+    let [nextEvent, ...restEvents] = shoppingEvents;
 
-      const currentEvent = shoppingEvents.at(index);
-      const currentEventDate = DateTime.fromJSDate(currentEvent.date);
-      const period = Interval.fromDateTimes(currentEventDate.startOf('week'), currentEventDate.endOf('week'));
+    do {
+      const nextEventDate = DateTime.fromJSDate(nextEvent.date);
+      const week = Interval.fromDateTimes(nextEventDate.startOf('week'), nextEventDate.endOf('week'));
+      const eventInSameWeek = takeWhile(restEvents, (event) => week.contains(event.date));
+      const eventItem = nextEvent.items.find((item: { sku: string }) => item.sku === sku);
+      const sumQuantity =  eventInSameWeek.reduce((acc, event) => {
+        const item = event.items.find((item: { sku: string }) => item.sku === sku);
+        return acc + item.quantity;
+      }, 0);
 
-      const inSameWeek = shoppingEvents.filter((event: any, eventIndex: number) => {
-        const eventDate = DateTime.fromJSDate(event.date);
-
-        if (period.contains(eventDate)) {
-          mergedEventsIndex.push(eventIndex);
-          return true;
-        }
-
-        return false;
+      eventsAccumulator.push({
+        date: nextEventDate,
+        sku,
+        qty: eventItem.quantity || sumQuantity,
+        price: eventItem.price || 0,
+        events: eventInSameWeek.length + 1
       });
 
-      const item: NormalizedEvent = {
-        date: DateTime.fromJSDate(last(inSameWeek).date),
-        sku,
-        qty: 0,
-        price: 0,
-        events: inSameWeek.length
-      };
-
-      for (const event of inSameWeek) {
-        const eventItem = event.items.find((item: { sku: string }) => item.sku === sku);
-        item.qty += eventItem.quantity || 0;
-        item.price += eventItem.price || 0;
-      }
-
-      eventsAccumulator.push(item);
-    }
+      nextEvent = restEvents.shift();
+    } while (nextEvent);
 
     return eventsAccumulator;
   }

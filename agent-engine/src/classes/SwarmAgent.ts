@@ -102,7 +102,7 @@ export default class SwarmAgents {
         workerData: {
           path: "agent-worker.ts",
           isTest: process.env.NODE_ENV === "test",
-          changeDate: DateTime.utc().toJSDate(),
+          changeDate: DateTime.local().toJSDate(),
           agent
         }
       });

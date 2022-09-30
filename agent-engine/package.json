@@ -1,6 +1,6 @@
 {
   "name": "agent-engine",
-  "version": "1.0.0",
+  "version": "1.0.0-beta",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,10 +8,20 @@
     "populate:events": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/populate-events.ts",
     "populate:sku": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/populate-skus.ts",
     "swarm:init": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/initialize-swarm.ts",
-    "test": "jest"
+    "test": "jest --runInBand --forceExit"
   },
   "author": "",
-  "license": "ISC",
+  "contributors": [
+    {
+      "name": "Diego Resendez",
+      "email": "diego.resendez@zero-oneit.com"
+    },
+    {
+      "name": "John Arboleda",
+      "email": "johnantoniio@gmail.com"
+    }
+  ],
+  "license": "TDB",
   "devDependencies": {
     "@shelf/jest-mongodb": "^4.1.0",
     "@types/bluebird": "^3.5.36",
@@ -23,6 +33,9 @@
     "@types/mockingoose": "^2.13.0",
     "@types/mongoose": "^5.11.97",
     "@types/node": "^18.7.13",
+    "@types/node-cron": "^3.0.4",
+    "@types/numeral": "^2.0.2",
+    "@types/pretty-ms": "^5.0.1",
     "@types/reflect-metadata": "^0.1.0",
     "@types/uuid": "^8.3.4",
     "@types/yargs-parser": "^21.0.0",
@@ -43,6 +56,9 @@
     "luxon": "^3.0.1",
     "mongodb": "^4.10.0",
     "mongoose": "^6.5.3",
+    "node-cron": "^3.0.2",
+    "numeral": "^2.0.6",
+    "pretty-ms": "7.0.1",
     "reflect-metadata": "^0.1.13",
     "simple-statistics": "^7.7.6",
     "uuid": "^9.0.0",
